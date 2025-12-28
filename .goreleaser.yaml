@@ -79,14 +79,30 @@ brews:
     install: |
       bin.install "sparktype"
 
-# Custom publishers for npm and pypi packages
+# Publishers
 publishers:
-  - name: npm-packages
-    cmd: node ./scripts/publish-npm.js {{ .Version }}
+  # Publish platform-specific npm packages (runs once per archive)
+  - name: npm-platform
+    ids:
+      - default
+    cmd: node ./scripts/publish-npm-platform.js {{ .Version }} {{ .ArtifactName }}
     env:
       - NPM_TOKEN={{ .Env.NPM_TOKEN }}
+      - NODE_AUTH_TOKEN={{ .Env.NPM_TOKEN }}
 
+  # Publish main npm package (runs once, triggered by checksum file)
+  - name: npm-main
+    ids: []
+    checksum: true
+    cmd: node ./scripts/publish-npm-main.js {{ .Version }}
+    env:
+      - NPM_TOKEN={{ .Env.NPM_TOKEN }}
+      - NODE_AUTH_TOKEN={{ .Env.NPM_TOKEN }}
+
+  # Build and publish PyPI wheels (runs once, triggered by checksum file)
   - name: pypi-packages
+    ids: []
+    checksum: true
     cmd: ./scripts/publish-pypi.sh {{ .Version }}
     env:
       - PYPI_TOKEN={{ .Env.PYPI_TOKEN }}
