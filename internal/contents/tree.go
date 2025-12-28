@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gobwas/glob"
+
 	"github.com/hntrl/sparktype/internal/config"
 	"github.com/hntrl/sparktype/internal/spec"
 )

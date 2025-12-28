@@ -376,4 +376,3 @@ func TestParser_RegexWithNestedParens(t *testing.T) {
 		t.Error("expected to find Regex modifier")
 	}
 }
-

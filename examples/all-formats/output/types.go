@@ -6,25 +6,25 @@ import "time"
 
 // Address A physical address
 type Address struct {
-	City string `json:"city"`
-	Country string `json:"country"`
-	State *string `json:"state,omitempty"`
-	Street string `json:"street"`
+	City    string  `json:"city"`
+	Country string  `json:"country"`
+	State   *string `json:"state,omitempty"`
+	Street  string  `json:"street"`
 	ZipCode *string `json:"zipCode,omitempty"`
 }
 
 // ApiError Standard API error response
 type ApiError struct {
-	Code string `json:"code"`
+	Code    string   `json:"code"`
 	Details []string `json:"details,omitempty"`
-	Message string `json:"message"`
+	Message string   `json:"message"`
 }
 
 // CreateUserRequest Request body for creating a user
 type CreateUserRequest struct {
-	Email string `json:"email"`
-	Name *string `json:"name,omitempty"`
-	Password string `json:"password"`
+	Email    string  `json:"email"`
+	Name     *string `json:"name,omitempty"`
+	Password string  `json:"password"`
 	// The role of a user
 	Role *UserRole `json:"role,omitempty"`
 }
@@ -44,17 +44,17 @@ type PaginatedResponse struct {
 type Status string
 
 const (
-	StatusActive Status = "active"
+	StatusActive   Status = "active"
 	StatusInactive Status = "inactive"
-	StatusPending Status = "pending"
-	StatusDeleted Status = "deleted"
+	StatusPending  Status = "pending"
+	StatusDeleted  Status = "deleted"
 )
 
 // UpdateUserRequest Request body for updating a user
 type UpdateUserRequest struct {
 	// A physical address
 	Address *Address `json:"address,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Name    *string  `json:"name,omitempty"`
 	// The role of a user
 	Role *UserRole `json:"role,omitempty"`
 }
@@ -82,6 +82,6 @@ type UserRole string
 
 const (
 	UserRoleAdmin UserRole = "admin"
-	UserRoleUser UserRole = "user"
+	UserRoleUser  UserRole = "user"
 	UserRoleGuest UserRole = "guest"
 )

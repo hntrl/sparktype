@@ -341,4 +341,3 @@ func TestGeneratorRegistry_Integration(t *testing.T) {
 		})
 	}
 }
-

@@ -403,4 +403,3 @@ const (
 		t.Errorf("expected first value 'active', got %q", enum.Values[0].Value)
 	}
 }
-

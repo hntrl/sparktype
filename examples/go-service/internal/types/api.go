@@ -8,45 +8,45 @@ import "time"
 type Author struct {
 	AvatarUrl *string `json:"avatarUrl,omitempty"`
 	// Author biography
-	Bio *string `json:"bio,omitempty"`
-	Email string `json:"email"`
-	ID string `json:"id"`
-	Name string `json:"name"`
+	Bio   *string `json:"bio,omitempty"`
+	Email string  `json:"email"`
+	ID    string  `json:"id"`
+	Name  string  `json:"name"`
 	// Number of published posts
 	PostCount *int `json:"postCount,omitempty"`
 	// Social media links
 	SocialLinks *SocialLinks `json:"socialLinks,omitempty"`
-	Website *string `json:"website,omitempty"`
+	Website     *string      `json:"website,omitempty"`
 }
 
 // Comment A comment on a post
 type Comment struct {
 	// Whether the comment is approved for display
-	Approved *bool `json:"approved,omitempty"`
-	AuthorEmail *string `json:"authorEmail,omitempty"`
-	AuthorName string `json:"authorName"`
-	AuthorUrl *string `json:"authorUrl,omitempty"`
-	Content string `json:"content"`
-	CreatedAt time.Time `json:"createdAt"`
-	ID string `json:"id"`
+	Approved    *bool     `json:"approved,omitempty"`
+	AuthorEmail *string   `json:"authorEmail,omitempty"`
+	AuthorName  string    `json:"authorName"`
+	AuthorUrl   *string   `json:"authorUrl,omitempty"`
+	Content     string    `json:"content"`
+	CreatedAt   time.Time `json:"createdAt"`
+	ID          string    `json:"id"`
 	// Parent comment ID for replies
 	ParentId *string `json:"parentId,omitempty"`
-	PostId string `json:"postId"`
+	PostId   string  `json:"postId"`
 }
 
 // CreateCommentRequest Request to create a comment
 type CreateCommentRequest struct {
-	AuthorEmail string `json:"authorEmail"`
-	AuthorName string `json:"authorName"`
-	AuthorUrl *string `json:"authorUrl,omitempty"`
-	Content string `json:"content"`
-	ParentId *string `json:"parentId,omitempty"`
+	AuthorEmail string  `json:"authorEmail"`
+	AuthorName  string  `json:"authorName"`
+	AuthorUrl   *string `json:"authorUrl,omitempty"`
+	Content     string  `json:"content"`
+	ParentId    *string `json:"parentId,omitempty"`
 }
 
 // CreatePostRequest Request to create a post
 type CreatePostRequest struct {
-	Content string `json:"content"`
-	Excerpt *string `json:"excerpt,omitempty"`
+	Content          string  `json:"content"`
+	Excerpt          *string `json:"excerpt,omitempty"`
 	FeaturedImageUrl *string `json:"featuredImageUrl,omitempty"`
 	// Schedule publish time
 	PublishedAt *time.Time `json:"publishedAt,omitempty"`
@@ -54,8 +54,8 @@ type CreatePostRequest struct {
 	Slug *string `json:"slug,omitempty"`
 	// Publication status
 	Status *PostStatus `json:"status,omitempty"`
-	Tags []string `json:"tags,omitempty"`
-	Title string `json:"title"`
+	Tags   []string    `json:"tags,omitempty"`
+	Title  string      `json:"title"`
 }
 
 // ErrorResponse API error response
@@ -72,11 +72,11 @@ type ErrorResponse struct {
 
 // Image An image
 type Image struct {
-	Alt string `json:"alt"`
+	Alt     string  `json:"alt"`
 	Caption *string `json:"caption,omitempty"`
-	Height *int `json:"height,omitempty"`
-	URL string `json:"url"`
-	Width *int `json:"width,omitempty"`
+	Height  *int    `json:"height,omitempty"`
+	URL     string  `json:"url"`
+	Width   *int    `json:"width,omitempty"`
 }
 
 // Post A blog post
@@ -86,21 +86,21 @@ type Post struct {
 	// Number of comments
 	CommentCount *int `json:"commentCount,omitempty"`
 	// Full post content in Markdown
-	Content string `json:"content"`
+	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"createdAt"`
 	// Short summary of the post
 	Excerpt *string `json:"excerpt,omitempty"`
 	// An image
 	FeaturedImage *Image `json:"featuredImage,omitempty"`
-	ID string `json:"id"`
+	ID            string `json:"id"`
 	// When the post was published
 	PublishedAt *time.Time `json:"publishedAt,omitempty"`
 	// URL-friendly identifier
 	Slug string `json:"slug"`
 	// Publication status
-	Status PostStatus `json:"status"`
-	Tags []string `json:"tags,omitempty"`
-	Title string `json:"title"`
+	Status    PostStatus `json:"status"`
+	Tags      []string   `json:"tags,omitempty"`
+	Title     string     `json:"title"`
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 	// Number of views
 	ViewCount *int `json:"viewCount,omitempty"`
@@ -108,8 +108,8 @@ type Post struct {
 
 // PostList Paginated list of posts
 type PostList struct {
-	HasMore *bool `json:"hasMore,omitempty"`
-	Posts []Post `json:"posts"`
+	HasMore *bool  `json:"hasMore,omitempty"`
+	Posts   []Post `json:"posts"`
 	// Total number of posts
 	Total int `json:"total"`
 }
@@ -118,25 +118,25 @@ type PostList struct {
 type PostStatus string
 
 const (
-	PostStatusDraft PostStatus = "draft"
+	PostStatusDraft     PostStatus = "draft"
 	PostStatusPublished PostStatus = "published"
-	PostStatusArchived PostStatus = "archived"
+	PostStatusArchived  PostStatus = "archived"
 )
 
 // SocialLinks Social media links
 type SocialLinks struct {
-	Github *string `json:"github,omitempty"`
+	Github   *string `json:"github,omitempty"`
 	Linkedin *string `json:"linkedin,omitempty"`
-	Twitter *string `json:"twitter,omitempty"`
+	Twitter  *string `json:"twitter,omitempty"`
 }
 
 // UpdatePostRequest Request to update a post
 type UpdatePostRequest struct {
-	Content *string `json:"content,omitempty"`
-	Excerpt *string `json:"excerpt,omitempty"`
+	Content          *string `json:"content,omitempty"`
+	Excerpt          *string `json:"excerpt,omitempty"`
 	FeaturedImageUrl *string `json:"featuredImageUrl,omitempty"`
 	// Publication status
 	Status *PostStatus `json:"status,omitempty"`
-	Tags []string `json:"tags,omitempty"`
-	Title *string `json:"title,omitempty"`
+	Tags   []string    `json:"tags,omitempty"`
+	Title  *string     `json:"title,omitempty"`
 }

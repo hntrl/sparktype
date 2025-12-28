@@ -45,4 +45,3 @@
 // during loading. This allows generators to produce references to other types
 // rather than inlining definitions, resulting in cleaner generated code.
 package spec
-

@@ -478,4 +478,3 @@ func TestPathEqual(t *testing.T) {
 		}
 	}
 }
-

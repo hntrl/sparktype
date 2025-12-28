@@ -6,11 +6,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/hntrl/sparktype/internal/config"
 	"github.com/hntrl/sparktype/internal/contents"
 	"github.com/hntrl/sparktype/internal/generators"
 	"github.com/hntrl/sparktype/internal/spec"
-	"github.com/spf13/cobra"
 )
 
 var checkConfigPath string

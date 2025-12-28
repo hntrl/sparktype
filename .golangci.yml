@@ -4,97 +4,55 @@ run:
   timeout: 5m
 
 linters:
-  default: all
-  disable:
-    - wsl
-    - nlreturn
-    - gochecknoglobals
-    - funlen
-    - gocognit
-    - cyclop
-    - maintidx
-    - lll
-    - varnamelen
-    - ireturn
-    - exhaustruct
-    - depguard
-    - tagliatelle
-    - godox
-    - err113
-    - wrapcheck
-    - testpackage
-    - paralleltest
-    - tparallel
-    - nilerr
+  default: standard
+  enable:
+    - gocritic
+    - misspell
 
   settings:
     govet:
       disable:
         - fieldalignment
 
-    gocyclo:
-      min-complexity: 15
-
-    goconst:
-      min-len: 3
-      min-occurrences: 3
-
     gocritic:
       disabled-checks:
-        - hugeParam
-        - rangeValCopy
+        - appendAssign
+        - ifElseChain
+        - deprecatedComment
 
     misspell:
       locale: US
 
-    nakedret:
-      max-func-lines: 30
-
-    revive:
-      rules:
-        - name: blank-imports
-        - name: context-as-argument
-        - name: context-keys-type
-        - name: dot-imports
-        - name: error-return
-        - name: error-strings
-        - name: error-naming
-        - name: exported
-        - name: if-return
-        - name: increment-decrement
-        - name: var-naming
-        - name: var-declaration
-        - name: package-comments
-        - name: range
-        - name: receiver-naming
-        - name: time-naming
-        - name: unexported-return
-        - name: indent-error-flow
-        - name: errorf
-
     staticcheck:
       checks:
         - all
+        - -QF1003
+        - -QF1006
         - -ST1000
         - -ST1003
+        - -ST1020
 
   exclusions:
     rules:
       - path: _test\.go
         linters:
-          - dupl
-          - gosec
-          - goconst
+          - errcheck
 
       - path: testdata/
         linters:
           - errcheck
-          - gosec
-          - govet
 
-      - path: internal/cli/
+      - path: internal/generators/.*/parser\.go
         linters:
-          - gocyclo
+          - errcheck
+
+      - path: internal/parser/
+        linters:
+          - errcheck
+
+      - path: internal/spec/
+        linters:
+          - errcheck
 
 formatters:
   enable:

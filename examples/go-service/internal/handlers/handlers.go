@@ -273,4 +273,3 @@ func (h *Handler) GetAuthor(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, author)
 }
-

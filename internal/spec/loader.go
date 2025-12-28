@@ -11,6 +11,7 @@ import (
 	"sort"
 
 	"github.com/getkin/kin-openapi/openapi3"
+
 	"github.com/hntrl/sparktype/internal/config"
 )
 

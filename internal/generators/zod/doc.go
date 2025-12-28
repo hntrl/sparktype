@@ -53,4 +53,3 @@
 //   - Regex: .regex(/pattern/)
 //   - Int: .int() for integer numbers
 package zod
-

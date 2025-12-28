@@ -481,4 +481,3 @@ func TestContainsNamespace(t *testing.T) {
 		})
 	}
 }
-

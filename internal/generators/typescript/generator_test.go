@@ -462,4 +462,3 @@ func TestCompare_NullableProperty(t *testing.T) {
 		t.Errorf("expected 1 diff for nullable mismatch, got %d", len(diffs))
 	}
 }
-

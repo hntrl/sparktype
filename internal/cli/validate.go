@@ -5,8 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/hntrl/sparktype/internal/config"
 	"github.com/spf13/cobra"
+
+	"github.com/hntrl/sparktype/internal/config"
 )
 
 var validateCmd = &cobra.Command{

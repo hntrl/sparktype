@@ -21,8 +21,8 @@ var (
 // Store is an in-memory store for blog data.
 type Store struct {
 	mu       sync.RWMutex
-	posts    map[string]*types.Post    // keyed by slug
-	authors  map[string]*types.Author  // keyed by ID
+	posts    map[string]*types.Post      // keyed by slug
+	authors  map[string]*types.Author    // keyed by ID
 	comments map[string][]*types.Comment // keyed by post ID
 }
 
@@ -58,36 +58,36 @@ func (s *Store) seedData() {
 
 	// Create sample posts
 	post1 := &types.Post{
-		ID:        "550e8400-e29b-41d4-a716-446655440010",
-		Slug:      "getting-started-with-go",
-		Title:     "Getting Started with Go",
-		Excerpt:   stringPtr("A beginner's guide to the Go programming language."),
-		Content:   "# Getting Started with Go\n\nGo is a statically typed, compiled language...",
-		Status:    types.PostStatusPublished,
-		Author:    *author,
-		Tags:      []string{"go", "programming", "tutorial"},
-		ViewCount:   intPtr(1523),
+		ID:           "550e8400-e29b-41d4-a716-446655440010",
+		Slug:         "getting-started-with-go",
+		Title:        "Getting Started with Go",
+		Excerpt:      stringPtr("A beginner's guide to the Go programming language."),
+		Content:      "# Getting Started with Go\n\nGo is a statically typed, compiled language...",
+		Status:       types.PostStatusPublished,
+		Author:       *author,
+		Tags:         []string{"go", "programming", "tutorial"},
+		ViewCount:    intPtr(1523),
 		CommentCount: intPtr(5),
-		PublishedAt: timePtr(now.Add(-24 * time.Hour)),
-		CreatedAt:   now.Add(-48 * time.Hour),
-		UpdatedAt:   timePtr(now.Add(-24 * time.Hour)),
+		PublishedAt:  timePtr(now.Add(-24 * time.Hour)),
+		CreatedAt:    now.Add(-48 * time.Hour),
+		UpdatedAt:    timePtr(now.Add(-24 * time.Hour)),
 	}
 	s.posts[post1.Slug] = post1
 
 	post2 := &types.Post{
-		ID:        "550e8400-e29b-41d4-a716-446655440011",
-		Slug:      "type-safe-apis-with-sparktype",
-		Title:     "Building Type-Safe APIs with sparktype",
-		Excerpt:   stringPtr("How to use sparktype for end-to-end type safety."),
-		Content:   "# Type-Safe APIs\n\nsparktype generates types from OpenAPI specs...",
-		Status:    types.PostStatusPublished,
-		Author:    *author,
-		Tags:      []string{"go", "typescript", "api", "sparktype"},
-		ViewCount:   intPtr(892),
+		ID:           "550e8400-e29b-41d4-a716-446655440011",
+		Slug:         "type-safe-apis-with-sparktype",
+		Title:        "Building Type-Safe APIs with sparktype",
+		Excerpt:      stringPtr("How to use sparktype for end-to-end type safety."),
+		Content:      "# Type-Safe APIs\n\nsparktype generates types from OpenAPI specs...",
+		Status:       types.PostStatusPublished,
+		Author:       *author,
+		Tags:         []string{"go", "typescript", "api", "sparktype"},
+		ViewCount:    intPtr(892),
 		CommentCount: intPtr(3),
-		PublishedAt: timePtr(now.Add(-12 * time.Hour)),
-		CreatedAt:   now.Add(-36 * time.Hour),
-		UpdatedAt:   timePtr(now.Add(-12 * time.Hour)),
+		PublishedAt:  timePtr(now.Add(-12 * time.Hour)),
+		CreatedAt:    now.Add(-36 * time.Hour),
+		UpdatedAt:    timePtr(now.Add(-12 * time.Hour)),
 	}
 	s.posts[post2.Slug] = post2
 
@@ -403,8 +403,7 @@ func generateID() string {
 	return time.Now().Format("20060102150405.000000")
 }
 
-func stringPtr(s string) *string { return &s }
-func intPtr(i int) *int          { return &i }
-func boolPtr(b bool) *bool       { return &b }
+func stringPtr(s string) *string     { return &s }
+func intPtr(i int) *int              { return &i }
+func boolPtr(b bool) *bool           { return &b }
 func timePtr(t time.Time) *time.Time { return &t }
-

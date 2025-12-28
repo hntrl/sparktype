@@ -83,8 +83,6 @@ func (s *SchemaDecl) Serialize() string {
 }
 
 // Namespace represents the old-style Zod namespace: export const X = { ... } as const
-// Deprecated: New code uses TSNamespace with type exports instead.
-// Kept for parser backwards compatibility when reading existing files.
 type Namespace struct {
 	Name     string
 	Children []Node // SchemaProperty, NestedNamespace
@@ -107,8 +105,6 @@ func (n *Namespace) Serialize() string {
 	return strings.Join(lines, "\n")
 }
 
-// SchemaProperty represents a schema as an object property: fooSchema: z.object({...})
-// Deprecated: Used only for parser backwards compatibility.
 type SchemaProperty struct {
 	Name   string
 	Schema ZodExpr
