@@ -1,0 +1,18 @@
+{
+  "specs": {
+    "api": {
+      "url": "${API_BASE_URL}/openapi.json",
+      "headers": {
+        "X-Api-Key": "${API_KEY}"
+      }
+    }
+  },
+  "outputs": [
+    {
+      "path": "${OUTPUT_DIR}/types.ts",
+      "format": "typescript",
+      "contents": ["api:*"]
+    }
+  ]
+}
+

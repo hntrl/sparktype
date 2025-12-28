@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sparktype"
+version = "0.0.0-development"
+description = "Generate static types from OpenAPI specifications"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+authors = [
+    {name = "hntrl"}
+]
+keywords = ["openapi", "typescript", "codegen", "types", "schema", "zod", "python"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Code Generators",
+]
+# No runtime dependencies - binary is bundled in the wheel
+
+[project.urls]
+Homepage = "https://github.com/hntrl/sparktype"
+Repository = "https://github.com/hntrl/sparktype"
+Issues = "https://github.com/hntrl/sparktype/issues"
+
+[project.scripts]
+sparktype = "sparktype.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sparktype*"]
+
+[tool.setuptools.package-data]
+sparktype = ["bin/*"]

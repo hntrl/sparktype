@@ -1,0 +1,54 @@
+name: 📖 Documentation Issue
+description: Report an issue with the documentation or suggest improvements
+labels: ["documentation", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve the sparktype documentation!
+
+  - type: input
+    id: page
+    attributes:
+      label: Documentation Page
+      description: Link to the page with the issue, or describe where it should be added.
+      placeholder: "https://hntrl.github.io/sparktype/getting-started"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the issue or improvement in detail.
+      placeholder: |
+        The section on configuration options says X, but it should say Y...
+        
+        OR
+        
+        It would be helpful to add documentation about...
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Change
+      description: If you have a specific suggestion for the fix or improvement, describe it here.
+      placeholder: |
+        Change "foo" to "bar"...
+        
+        OR
+        
+        Add a new section that covers...
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues to ensure this hasn't already been reported.
+          required: true
+        - label: I would be willing to submit a PR to fix this issue.
+          required: false
+

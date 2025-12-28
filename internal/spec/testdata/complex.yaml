@@ -1,0 +1,78 @@
+openapi: "3.0.0"
+info:
+  title: Complex Test API
+  version: "1.0.0"
+paths: {}
+components:
+  schemas:
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+    Person:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+        tags:
+          type: array
+          items:
+            type: string
+    UserRole:
+      type: string
+      enum:
+        - admin
+        - user
+        - guest
+    ExtendedUser:
+      allOf:
+        - $ref: '#/components/schemas/Person'
+        - type: object
+          properties:
+            role:
+              $ref: '#/components/schemas/UserRole'
+            email:
+              type: string
+              format: email
+    Response:
+      oneOf:
+        - type: object
+          properties:
+            data:
+              type: string
+        - type: object
+          properties:
+            error:
+              type: string
+    NullableField:
+      type: object
+      properties:
+        value:
+          type: string
+          nullable: true
+    ArrayWithConstraints:
+      type: array
+      items:
+        type: integer
+      minItems: 1
+      maxItems: 10
+      uniqueItems: true
+    StringWithConstraints:
+      type: string
+      minLength: 3
+      maxLength: 50
+      pattern: "^[a-z]+$"
+    NumberWithConstraints:
+      type: number
+      minimum: 0
+      maximum: 100
+

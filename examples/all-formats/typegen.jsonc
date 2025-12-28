@@ -1,0 +1,54 @@
+{
+  "$schema": "https://hntrl.github.io/sparktype/schema.json",
+  "specs": {
+    "api": {
+      "path": "../basic/openapi.yaml"
+    }
+  },
+  "outputs": [
+    {
+      "path": "./output/types.ts",
+      "format": "typescript",
+      "contents": [
+        "api:*"
+      ]
+    },
+    {
+      "path": "./output/schemas.ts",
+      "format": "zod",
+      "contents": [
+        "api:*"
+      ]
+    },
+    {
+      "path": "./output/combined.ts",
+      "format": "zod",
+      "contents": [
+        "api:*"
+      ],
+      "options": {
+        "inferTypes": true
+      }
+    },
+    {
+      "path": "./output/types.py",
+      "format": "python",
+      "contents": [
+        "api:*"
+      ]
+    },
+    {
+      "path": "./output/types.go",
+      "format": "go",
+      "contents": [
+        "api:*"
+      ],
+      "options": {
+        "package": "api"
+      }
+    }
+  ],
+  "options": {
+    "generateEnums": true
+  }
+}

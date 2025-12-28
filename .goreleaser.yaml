@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: sparktype
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: sparktype
+    main: ./cmd/sparktype
+    binary: sparktype
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE*
+      - README*
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^chore:'
+
+release:
+  github:
+    owner: hntrl
+    name: sparktype
+  prerelease: auto
+  draft: false
+
+# Homebrew tap
+brews:
+  - name: sparktype
+    repository:
+      owner: hntrl
+      name: homebrew-sparktype
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: https://github.com/hntrl/sparktype
+    description: Generate static types from OpenAPI specifications
+    license: MIT
+    test: |
+      system "#{bin}/sparktype", "--help"
+    install: |
+      bin.install "sparktype"
+
+# Custom publishers for npm and pypi packages
+publishers:
+  - name: npm-packages
+    cmd: node ./scripts/publish-npm.js {{ .Version }}
+    env:
+      - NPM_TOKEN={{ .Env.NPM_TOKEN }}
+
+  - name: pypi-packages
+    cmd: ./scripts/publish-pypi.sh {{ .Version }}
+    env:
+      - PYPI_TOKEN={{ .Env.PYPI_TOKEN }}

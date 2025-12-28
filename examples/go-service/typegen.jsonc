@@ -1,0 +1,23 @@
+{
+  "$schema": "https://hntrl.github.io/sparktype/schema.json",
+  "specs": {
+    "api": {
+      "path": "./openapi.yaml"
+    }
+  },
+  "outputs": [
+    {
+      "path": "./internal/types/api.go",
+      "format": "go",
+      "contents": [
+        "api:*"
+      ],
+      "options": {
+        "package": "types"
+      }
+    }
+  ],
+  "options": {
+    "generateEnums": true
+  }
+}

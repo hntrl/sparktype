@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions & Discussions
+    url: https://github.com/hntrl/sparktype/discussions
+    about: Ask questions, share ideas, or discuss sparktype usage
+  - name: 📖 Documentation
+    url: https://hntrl.github.io/sparktype
+    about: Check the documentation for guides and examples
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/hntrl/sparktype/security/advisories/new
+    about: Report a security vulnerability privately
+

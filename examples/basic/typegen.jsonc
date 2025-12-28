@@ -1,0 +1,26 @@
+{
+  "$schema": "https://hntrl.github.io/sparktype/schema.json",
+  // Define specs
+  "specs": {
+    "api": {
+      "path": "./openapi.yaml"
+    }
+  },
+  // Output configurations
+  "outputs": [
+    {
+      "path": "./types/api.ts",
+      "format": "typescript",
+      "contents": [
+        // Include all types from the api spec
+        "api:*"
+      ]
+    }
+  ],
+  // Global options
+  "options": {
+    "dereferenceRefs": true,
+    "generateEnums": true,
+    "nullableHandling": "optional"
+  }
+}

@@ -1,0 +1,279 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://hntrl.github.io/sparktype/schema.json",
+  "title": "Sparktype Configuration",
+  "description": "Configuration schema for sparktype typegen.jsonc files",
+  "type": "object",
+  "required": [
+    "specs",
+    "outputs"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "specs": {
+      "type": "object",
+      "description": "Named OpenAPI spec sources",
+      "additionalProperties": {
+        "$ref": "#/definitions/spec"
+      },
+      "minProperties": 1
+    },
+    "outputs": {
+      "type": "array",
+      "description": "Output configurations",
+      "items": {
+        "$ref": "#/definitions/output"
+      },
+      "minItems": 1
+    },
+    "options": {
+      "$ref": "#/definitions/globalOptions"
+    }
+  },
+  "definitions": {
+    "spec": {
+      "type": "object",
+      "description": "OpenAPI spec source configuration. Exactly one of path, url, or schemas must be specified.",
+      "oneOf": [
+        {
+          "required": [
+            "path"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Local file path to the OpenAPI spec (JSON or YAML)"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Remote URL to fetch the OpenAPI spec from"
+            },
+            "headers": {
+              "type": "object",
+              "description": "HTTP headers to include when fetching the spec. Supports ${ENV_VAR} interpolation.",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "schemas"
+          ],
+          "properties": {
+            "schemas": {
+              "type": "object",
+              "description": "Inline schema definitions (OpenAPI schema format)",
+              "additionalProperties": {
+                "$ref": "#/definitions/inlineSchema"
+              },
+              "minProperties": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "inlineSchema": {
+      "type": "object",
+      "description": "Inline JSON Schema / OpenAPI schema definition",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "string",
+            "number",
+            "integer",
+            "boolean",
+            "array",
+            "object",
+            "null"
+          ]
+        },
+        "format": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "enum": {
+          "type": "array"
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/inlineSchema"
+          }
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "items": {
+          "$ref": "#/definitions/inlineSchema"
+        },
+        "allOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/inlineSchema"
+          }
+        },
+        "oneOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/inlineSchema"
+          }
+        },
+        "anyOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/inlineSchema"
+          }
+        },
+        "$ref": {
+          "type": "string"
+        },
+        "nullable": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "output": {
+      "type": "object",
+      "description": "Output file configuration",
+      "required": [
+        "path",
+        "format",
+        "contents"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Output file path"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "typescript",
+            "zod",
+            "python",
+            "go"
+          ],
+          "description": "Output format"
+        },
+        "contents": {
+          "type": "array",
+          "description": "Content items to include in the output. Each item is either a spec:pattern string or a namespace definition.",
+          "items": {
+            "$ref": "#/definitions/contentItem"
+          },
+          "minItems": 1
+        },
+        "options": {
+          "type": "object",
+          "description": "Format-specific options",
+          "properties": {
+            "exportType": {
+              "type": "string",
+              "enum": [
+                "interface",
+                "type"
+              ],
+              "description": "TypeScript export style (typescript format only)"
+            },
+            "readonlyProperties": {
+              "type": "boolean",
+              "description": "Mark all properties as readonly (typescript format only)"
+            },
+            "inferTypes": {
+              "type": "boolean",
+              "description": "Generate TypeScript interfaces alongside Zod schemas (zod format only). Interfaces use indexed types to reference schema types with JSDoc comments."
+            },
+            "package": {
+              "type": "string",
+              "description": "Go package name (go format only)"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "contentItem": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+:.+$",
+          "description": "Schema pattern in format 'spec:pattern' (e.g., 'users:User', 'products:*Request')"
+        },
+        {
+          "$ref": "#/definitions/namespaceDefinition"
+        }
+      ]
+    },
+    "namespaceDefinition": {
+      "type": "object",
+      "description": "Namespace definition containing schemas and/or nested namespaces. Only supported by typescript and zod formats.",
+      "required": [
+        "namespace",
+        "contents"
+      ],
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "description": "Namespace name (e.g., 'Models', 'API')"
+        },
+        "contents": {
+          "type": "array",
+          "description": "Content items within this namespace",
+          "items": {
+            "$ref": "#/definitions/contentItem"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "globalOptions": {
+      "type": "object",
+      "description": "Global generation options",
+      "properties": {
+        "dereferenceRefs": {
+          "type": "boolean",
+          "description": "Inline $ref references instead of keeping them as type references"
+        },
+        "generateEnums": {
+          "type": "boolean",
+          "description": "Generate native enums instead of union types where applicable"
+        },
+        "nullableHandling": {
+          "type": "string",
+          "enum": [
+            "optional",
+            "nullable",
+            "both"
+          ],
+          "description": "How to handle nullable fields"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

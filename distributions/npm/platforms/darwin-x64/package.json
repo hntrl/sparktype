@@ -1,0 +1,21 @@
+{
+  "name": "@sparktype/darwin-x64",
+  "version": "0.0.0-development",
+  "description": "sparktype binary for macOS x64 (Intel)",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "index.js",
+  "files": [
+    "bin/",
+    "index.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hntrl/sparktype.git"
+  },
+  "license": "MIT"
+}

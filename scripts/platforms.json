@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Shared platform configuration for npm and PyPI publish scripts. Maps canonical platform IDs to build system specifics.",
+  "platforms": {
+    "darwin-arm64": {
+      "go": {
+        "os": "darwin",
+        "arch": "arm64"
+      },
+      "npm": {
+        "key": "darwin-arm64"
+      },
+      "pypi": {
+        "tag": "macosx_11_0_arm64"
+      }
+    },
+    "darwin-x64": {
+      "go": {
+        "os": "darwin",
+        "arch": "amd64"
+      },
+      "npm": {
+        "key": "darwin-x64"
+      },
+      "pypi": {
+        "tag": "macosx_10_9_x86_64"
+      }
+    },
+    "linux-arm64": {
+      "go": {
+        "os": "linux",
+        "arch": "arm64"
+      },
+      "npm": {
+        "key": "linux-arm64"
+      },
+      "pypi": {
+        "tag": "manylinux_2_17_aarch64"
+      }
+    },
+    "linux-x64": {
+      "go": {
+        "os": "linux",
+        "arch": "amd64"
+      },
+      "npm": {
+        "key": "linux-x64"
+      },
+      "pypi": {
+        "tag": "manylinux_2_17_x86_64"
+      }
+    },
+    "win32-x64": {
+      "go": {
+        "os": "windows",
+        "arch": "amd64"
+      },
+      "binaryName": "sparktype.exe",
+      "npm": {
+        "key": "win32-x64"
+      },
+      "pypi": {
+        "tag": "win_amd64"
+      }
+    }
+  }
+}
+
