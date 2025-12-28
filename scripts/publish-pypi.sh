@@ -22,6 +22,7 @@ echo "Building Python wheels for sparktype v${VERSION}..."
 mkdir -p "$WHEELS_DIR"
 
 # Build platform-specific wheels
+# Note: build dependencies (build, wheel, twine) should be installed by the CI workflow
 python3 "${PYPI_DIR}/scripts/build-wheels.py" "$VERSION" "$DIST_DIR" --output "$WHEELS_DIR"
 
 # Upload to PyPI
@@ -32,14 +33,12 @@ if [ -z "$PYPI_TOKEN" ]; then
     exit 1
 fi
 
-python3 -m pip install --quiet twine
-
 # Upload all wheels
 python3 -m twine upload \
     --username __token__ \
     --password "$PYPI_TOKEN" \
     --non-interactive \
+    --skip-existing \
     "$WHEELS_DIR"/*.whl
 
 echo "Successfully published wheels to PyPI!"
-

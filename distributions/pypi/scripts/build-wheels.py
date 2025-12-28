@@ -77,6 +77,9 @@ def build_wheel(
     output_dir: Path,
 ) -> Path:
     """Build a wheel for a specific platform."""
+    # Ensure output_dir is absolute to avoid issues with cwd changes
+    output_dir = output_dir.resolve()
+
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
 
@@ -113,6 +116,15 @@ def build_wheel(
         if readme_src.exists():
             shutil.copy2(readme_src, tmpdir / "README.md")
 
+        # Update __version__ in __init__.py
+        init_path = pkg_dir / "__init__.py"
+        if init_path.exists():
+            init_content = init_path.read_text()
+            init_content = init_content.replace(
+                '__version__ = "0.0.0-development"', f'__version__ = "{version}"'
+            )
+            init_path.write_text(init_content)
+
         # Update __version__ in cli.py
         cli_path = pkg_dir / "cli.py"
         cli_content = cli_path.read_text()
@@ -124,8 +136,14 @@ def build_wheel(
         )
         cli_path.write_text(cli_content)
 
-        # Build wheel with specific platform tag
+        # Build wheel into a temp directory first, then rename and move to output_dir
         env = os.environ.copy()
+
+        # Create a temp directory for this build's output
+        build_output = tmpdir / "wheel_output"
+        build_output.mkdir()
+
+        # Use pip wheel directly - simpler and avoids build isolation issues
         result = subprocess.run(
             [
                 sys.executable,
@@ -134,7 +152,7 @@ def build_wheel(
                 "wheel",
                 "--no-deps",
                 "--wheel-dir",
-                str(output_dir),
+                str(build_output),
                 str(tmpdir),
             ],
             capture_output=True,
@@ -143,19 +161,37 @@ def build_wheel(
             cwd=tmpdir,
         )
 
+        # Always print build output for debugging
+        if result.stdout.strip():
+            print(f"  pip wheel stdout: {result.stdout.strip()}")
+        if result.stderr.strip():
+            print(f"  pip wheel stderr: {result.stderr.strip()}", file=sys.stderr)
+
         if result.returncode != 0:
-            print(f"Error building wheel: {result.stderr}", file=sys.stderr)
-            raise RuntimeError(f"Failed to build wheel for {platform_tag}")
+            raise RuntimeError(
+                f"Failed to build wheel for {platform_tag}: {result.stderr}"
+            )
 
-        # Find the built wheel and rename it with the correct platform tag
-        for whl in output_dir.glob("sparktype-*.whl"):
-            if "py3-none-any" in whl.name:
-                new_name = whl.name.replace("py3-none-any", f"py3-none-{platform_tag}")
-                new_path = whl.parent / new_name
-                whl.rename(new_path)
-                return new_path
+        # Find the built wheel in the temp directory
+        built_wheels = list(build_output.glob("sparktype-*.whl"))
+        if not built_wheels:
+            print(
+                f"  No wheels found in build output: {list(build_output.iterdir())}",
+                file=sys.stderr,
+            )
+            raise RuntimeError(f"No wheel created for {platform_tag}")
 
-        raise RuntimeError(f"No wheel found after build for {platform_tag}")
+        # Should be exactly one wheel
+        source_wheel = built_wheels[0]
+        print(f"  Built: {source_wheel.name}")
+
+        # Rename with platform tag and move to final output directory
+        new_name = source_wheel.name.replace("py3-none-any", f"py3-none-{platform_tag}")
+        dest_wheel = output_dir / new_name
+        shutil.move(str(source_wheel), str(dest_wheel))
+        print(f"  Renamed to: {dest_wheel.name}")
+
+        return dest_wheel
 
 
 def main():
