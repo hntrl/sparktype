@@ -1,0 +1,15 @@
+{
+  "specs": {
+    "api": {
+      "path": "./api.yaml"
+    }
+  },
+  "outputs": [
+    {
+      "path": "./types.ts",
+      "format": "typescript",
+      "contents": ["invalid-pattern-no-colon"]
+    }
+  ]
+}
+

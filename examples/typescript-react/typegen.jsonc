@@ -1,0 +1,33 @@
+{
+  "$schema": "https://hntrl.github.io/sparktype/schema.json",
+
+  "specs": {
+    "api": {
+      "path": "./openapi.yaml"
+    }
+  },
+
+  "outputs": [
+    // TypeScript interfaces for type-only imports (no runtime overhead)
+    {
+      "path": "./src/types/api.ts",
+      "format": "typescript",
+      "contents": ["api:*"]
+    },
+
+    // Zod schemas for runtime validation of API responses
+    {
+      "path": "./src/schemas/api.ts",
+      "format": "zod",
+      "contents": ["api:*"],
+      "options": {
+        "inferTypes": true
+      }
+    }
+  ],
+
+  "options": {
+    "generateEnums": true
+  }
+}
+

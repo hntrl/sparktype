@@ -1,0 +1,16 @@
+{
+  // A simple valid configuration
+  "specs": {
+    "users": {
+      "path": "./api/users.yaml"
+    }
+  },
+  "outputs": [
+    {
+      "path": "./types.ts",
+      "format": "typescript",
+      "contents": ["users:*"]
+    }
+  ]
+}
+

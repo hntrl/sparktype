@@ -1,0 +1,16 @@
+{
+  "specs": {
+    "api": {
+      "path": "./api.yaml",
+      "url": "https://example.com/api.json"
+    }
+  },
+  "outputs": [
+    {
+      "path": "./types.ts",
+      "format": "typescript",
+      "contents": ["api:*"]
+    }
+  ]
+}
+

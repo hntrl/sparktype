@@ -1,0 +1,57 @@
+{
+  "$schema": "./schema/typegen.json",
+  /* Multi-line comment
+     for complex configuration */
+  "specs": {
+    "users": {
+      "path": "./api/users.yaml"
+    },
+    "products": {
+      "url": "https://api.example.com/openapi.json",
+      "headers": {
+        "Authorization": "Bearer ${API_TOKEN}"
+      }
+    },
+    "inline": {
+      "schemas": {
+        "Status": {
+          "type": "string",
+          "enum": ["active", "inactive"]
+        }
+      }
+    }
+  },
+  "outputs": [
+    {
+      "path": "./types.ts",
+      "format": "typescript",
+      "contents": [
+        "users:User",
+        "users:*Request",
+        {
+          "namespace": "Products",
+          "contents": [
+            "products:*",
+            {
+              "namespace": "Internal",
+              "contents": ["inline:Status"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "./schemas.ts",
+      "format": "zod",
+      "contents": ["users:*"],
+      "options": {
+        "inferTypes": true
+      }
+    }
+  ],
+  "options": {
+    "dereferenceRefs": false,
+    "generateEnums": true
+  }
+}
+

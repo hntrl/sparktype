@@ -1,0 +1,269 @@
+openapi: "3.0.3"
+info:
+  title: Shared API Types
+  version: "1.0.0"
+  description: |
+    Shared API types for a monorepo with frontend and backend packages.
+    These types are generated once and shared across all packages.
+
+paths: {}
+
+components:
+  schemas:
+    # User domain
+    User:
+      type: object
+      description: A user account
+      required:
+        - id
+        - email
+        - name
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        avatarUrl:
+          type: string
+          format: uri
+        role:
+          $ref: '#/components/schemas/UserRole'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserRole:
+      type: string
+      enum:
+        - admin
+        - member
+        - guest
+
+    CreateUserRequest:
+      type: object
+      required:
+        - email
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        avatarUrl:
+          type: string
+          format: uri
+          nullable: true
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    # Workspace domain
+    Workspace:
+      type: object
+      description: A workspace/organization
+      required:
+        - id
+        - name
+        - slug
+        - plan
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+          pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+        description:
+          type: string
+        plan:
+          $ref: '#/components/schemas/PlanType'
+        memberCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    PlanType:
+      type: string
+      enum:
+        - free
+        - pro
+        - enterprise
+
+    WorkspaceMember:
+      type: object
+      description: A user's membership in a workspace
+      required:
+        - userId
+        - workspaceId
+        - role
+        - joinedAt
+      properties:
+        userId:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
+        role:
+          $ref: '#/components/schemas/MemberRole'
+        joinedAt:
+          type: string
+          format: date-time
+
+    MemberRole:
+      type: string
+      enum:
+        - owner
+        - admin
+        - member
+        - viewer
+
+    # Document domain
+    Document:
+      type: object
+      description: A document in a workspace
+      required:
+        - id
+        - title
+        - workspaceId
+        - authorId
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        content:
+          type: string
+          description: Document content in Markdown
+        workspaceId:
+          type: string
+          format: uuid
+        authorId:
+          type: string
+          format: uuid
+        author:
+          $ref: '#/components/schemas/User'
+        status:
+          $ref: '#/components/schemas/DocumentStatus'
+        tags:
+          type: array
+          items:
+            type: string
+        viewCount:
+          type: integer
+        lastViewedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DocumentStatus:
+      type: string
+      enum:
+        - draft
+        - published
+        - archived
+
+    CreateDocumentRequest:
+      type: object
+      required:
+        - title
+        - workspaceId
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        workspaceId:
+          type: string
+          format: uuid
+        tags:
+          type: array
+          items:
+            type: string
+
+    UpdateDocumentRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        status:
+          $ref: '#/components/schemas/DocumentStatus'
+        tags:
+          type: array
+          items:
+            type: string
+
+    # API response wrappers
+    PaginatedResponse:
+      type: object
+      required:
+        - items
+        - total
+        - page
+        - pageSize
+      properties:
+        items:
+          type: array
+          items: {}
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+
+    ApiError:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties:
+            type: string
+        timestamp:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+

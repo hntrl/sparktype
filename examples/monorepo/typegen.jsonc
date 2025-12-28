@@ -1,0 +1,92 @@
+{
+  "$schema": "https://hntrl.github.io/sparktype/schema.json",
+  "specs": {
+    "api": {
+      "path": "./openapi.yaml"
+    }
+  },
+  "outputs": [
+    // Shared TypeScript types for the frontend
+    {
+      "path": "./packages/frontend/src/types/api.ts",
+      "format": "typescript",
+      "contents": [
+        "api:*"
+      ]
+    },
+    // Zod schemas for frontend validation
+    {
+      "path": "./packages/frontend/src/schemas/api.ts",
+      "format": "zod",
+      "contents": [
+        "api:*"
+      ],
+      "options": {
+        "inferTypes": true
+      }
+    },
+    // Go types for the backend service
+    {
+      "path": "./services/api/internal/types/api.go",
+      "format": "go",
+      "contents": [
+        "api:*"
+      ],
+      "options": {
+        "package": "types"
+      }
+    },
+    // Python types for the worker service
+    {
+      "path": "./services/worker/src/types/api.py",
+      "format": "python",
+      "contents": [
+        "api:*"
+      ]
+    },
+    // Organized TypeScript types by domain
+    {
+      "path": "./packages/shared/src/types/domains.ts",
+      "format": "typescript",
+      "contents": [
+        {
+          "namespace": "Users",
+          "contents": [
+            "api:User",
+            "api:UserRole",
+            "api:CreateUserRequest",
+            "api:UpdateUserRequest"
+          ]
+        },
+        {
+          "namespace": "Workspaces",
+          "contents": [
+            "api:Workspace",
+            "api:PlanType",
+            "api:WorkspaceMember",
+            "api:MemberRole"
+          ]
+        },
+        {
+          "namespace": "Documents",
+          "contents": [
+            "api:Document",
+            "api:DocumentStatus",
+            "api:CreateDocumentRequest",
+            "api:UpdateDocumentRequest"
+          ]
+        },
+        {
+          "namespace": "Common",
+          "contents": [
+            "api:PaginatedResponse",
+            "api:ApiError"
+          ]
+        }
+      ]
+    }
+  ],
+  "options": {
+    "generateEnums": true
+  }
+}

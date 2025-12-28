@@ -1,0 +1,39 @@
+{
+  "name": "sparktype",
+  "version": "0.0.0-development",
+  "description": "Generate static types from OpenAPI specifications",
+  "keywords": [
+    "openapi",
+    "typescript",
+    "zod",
+    "codegen",
+    "types",
+    "schema"
+  ],
+  "homepage": "https://github.com/hntrl/sparktype",
+  "bugs": {
+    "url": "https://github.com/hntrl/sparktype/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hntrl/sparktype.git"
+  },
+  "license": "MIT",
+  "author": "hntrl",
+  "bin": {
+    "sparktype": "bin/sparktype.js"
+  },
+  "files": [
+    "bin/"
+  ],
+  "optionalDependencies": {
+    "@sparktype/darwin-arm64": "0.0.0-development",
+    "@sparktype/darwin-x64": "0.0.0-development",
+    "@sparktype/linux-arm64": "0.0.0-development",
+    "@sparktype/linux-x64": "0.0.0-development",
+    "@sparktype/win32-x64": "0.0.0-development"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

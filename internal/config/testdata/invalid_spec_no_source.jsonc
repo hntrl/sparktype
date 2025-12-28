@@ -1,0 +1,13 @@
+{
+  "specs": {
+    "api": {}
+  },
+  "outputs": [
+    {
+      "path": "./types.ts",
+      "format": "typescript",
+      "contents": ["api:*"]
+    }
+  ]
+}
+

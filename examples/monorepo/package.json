@@ -1,0 +1,19 @@
+{
+  "name": "sparktype-monorepo-example",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "types": "sparktype generate",
+    "types:check": "sparktype check",
+    "build": "npm run types && npm run -ws build",
+    "dev": "npm run types && npm run -ws dev",
+    "lint": "npm run -ws lint",
+    "test": "npm run -ws test"
+  },
+  "devDependencies": {
+    "sparktype": "latest",
+    "turbo": "^2.0.0"
+  }
+}

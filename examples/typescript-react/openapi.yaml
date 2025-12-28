@@ -1,0 +1,501 @@
+openapi: "3.0.3"
+info:
+  title: E-Commerce API
+  version: "1.0.0"
+  description: |
+    A simple e-commerce API for managing products, orders, and customers.
+    This spec is used to demonstrate sparktype in a TypeScript React application.
+
+paths:
+  /products:
+    get:
+      summary: List products
+      operationId: listProducts
+      parameters:
+        - name: category
+          in: query
+          schema:
+            $ref: '#/components/schemas/ProductCategory'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+    post:
+      summary: Create a product
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /products/{id}:
+    get:
+      summary: Get a product by ID
+      operationId: getProduct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /cart:
+    get:
+      summary: Get current cart
+      operationId: getCart
+      responses:
+        '200':
+          description: Current cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+    post:
+      summary: Add item to cart
+      operationId: addToCart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequest'
+      responses:
+        '200':
+          description: Updated cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+
+  /orders:
+    post:
+      summary: Create an order from cart
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+components:
+  schemas:
+    # Product schemas
+    Product:
+      type: object
+      description: A product available for purchase
+      required:
+        - id
+        - name
+        - price
+        - category
+        - inStock
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique product identifier
+        name:
+          type: string
+          description: Product name
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          description: Detailed product description
+        price:
+          $ref: '#/components/schemas/Price'
+        category:
+          $ref: '#/components/schemas/ProductCategory'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductImage'
+        inStock:
+          type: boolean
+          description: Whether the product is currently in stock
+        stockCount:
+          type: integer
+          description: Number of items in stock
+          minimum: 0
+        tags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    ProductCategory:
+      type: string
+      description: Product category
+      enum:
+        - electronics
+        - clothing
+        - home
+        - books
+        - sports
+        - toys
+
+    ProductImage:
+      type: object
+      description: Product image
+      required:
+        - url
+        - alt
+      properties:
+        url:
+          type: string
+          format: uri
+        alt:
+          type: string
+        isPrimary:
+          type: boolean
+          default: false
+
+    Price:
+      type: object
+      description: Price with currency
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          description: Price amount in smallest currency unit (cents)
+          minimum: 0
+        currency:
+          type: string
+          description: ISO 4217 currency code
+          pattern: '^[A-Z]{3}$'
+          default: USD
+        formatted:
+          type: string
+          description: Human-readable formatted price
+          readOnly: true
+
+    CreateProductRequest:
+      type: object
+      description: Request body for creating a product
+      required:
+        - name
+        - price
+        - category
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        price:
+          type: object
+          required:
+            - amount
+          properties:
+            amount:
+              type: number
+              minimum: 0
+            currency:
+              type: string
+              default: USD
+        category:
+          $ref: '#/components/schemas/ProductCategory'
+        images:
+          type: array
+          items:
+            type: object
+            required:
+              - url
+              - alt
+            properties:
+              url:
+                type: string
+                format: uri
+              alt:
+                type: string
+              isPrimary:
+                type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        stockCount:
+          type: integer
+          minimum: 0
+          default: 0
+
+    ProductListResponse:
+      type: object
+      description: Paginated list of products
+      required:
+        - items
+        - total
+        - limit
+        - offset
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        total:
+          type: integer
+          description: Total number of products matching the query
+        limit:
+          type: integer
+        offset:
+          type: integer
+        hasMore:
+          type: boolean
+
+    # Cart schemas
+    Cart:
+      type: object
+      description: Shopping cart
+      required:
+        - id
+        - items
+        - subtotal
+      properties:
+        id:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        subtotal:
+          $ref: '#/components/schemas/Price'
+        itemCount:
+          type: integer
+          description: Total number of items in cart
+
+    CartItem:
+      type: object
+      description: Item in a shopping cart
+      required:
+        - productId
+        - quantity
+        - price
+      properties:
+        productId:
+          type: string
+          format: uuid
+        product:
+          $ref: '#/components/schemas/Product'
+        quantity:
+          type: integer
+          minimum: 1
+        price:
+          $ref: '#/components/schemas/Price'
+
+    AddToCartRequest:
+      type: object
+      description: Request to add an item to cart
+      required:
+        - productId
+        - quantity
+      properties:
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+
+    # Order schemas
+    Order:
+      type: object
+      description: A customer order
+      required:
+        - id
+        - status
+        - items
+        - total
+        - shippingAddress
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        total:
+          $ref: '#/components/schemas/Price'
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    OrderStatus:
+      type: string
+      description: Order status
+      enum:
+        - pending
+        - confirmed
+        - processing
+        - shipped
+        - delivered
+        - cancelled
+
+    OrderItem:
+      type: object
+      description: Item in an order
+      required:
+        - productId
+        - productName
+        - quantity
+        - unitPrice
+        - totalPrice
+      properties:
+        productId:
+          type: string
+          format: uuid
+        productName:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        unitPrice:
+          $ref: '#/components/schemas/Price'
+        totalPrice:
+          $ref: '#/components/schemas/Price'
+
+    CreateOrderRequest:
+      type: object
+      description: Request to create an order
+      required:
+        - shippingAddress
+      properties:
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+        notes:
+          type: string
+          maxLength: 500
+
+    Address:
+      type: object
+      description: Physical address
+      required:
+        - line1
+        - city
+        - country
+        - postalCode
+      properties:
+        line1:
+          type: string
+        line2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: ISO 3166-1 alpha-2 country code
+        postalCode:
+          type: string
+
+    # Common schemas
+    ApiError:
+      type: object
+      description: API error response
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+        requestId:
+          type: string
+          description: Request ID for debugging
+
+    ErrorDetail:
+      type: object
+      description: Detailed error information
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          description: Field that caused the error
+        message:
+          type: string
+          description: Error description
+        code:
+          type: string
+          description: Error code for this field
+

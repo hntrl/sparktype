@@ -1,0 +1,496 @@
+openapi: "3.0.3"
+info:
+  title: Blog API
+  version: "1.0.0"
+  description: |
+    A blog API demonstrating sparktype with Go.
+    Shows how generated structs work with Go HTTP handlers and JSON marshaling.
+
+paths:
+  /posts:
+    get:
+      summary: List blog posts
+      operationId: listPosts
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/PostStatus'
+        - name: author_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostList'
+    post:
+      summary: Create a blog post
+      operationId: createPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePostRequest'
+      responses:
+        '201':
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /posts/{slug}:
+    get:
+      summary: Get a post by slug
+      operationId: getPost
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update a post
+      operationId: updatePost
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePostRequest'
+      responses:
+        '200':
+          description: Post updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+    delete:
+      summary: Delete a post
+      operationId: deletePost
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Post deleted
+
+  /posts/{slug}/comments:
+    get:
+      summary: Get comments for a post
+      operationId: listComments
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+    post:
+      summary: Add a comment to a post
+      operationId: createComment
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommentRequest'
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+
+  /authors:
+    get:
+      summary: List authors
+      operationId: listAuthors
+      responses:
+        '200':
+          description: List of authors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Author'
+
+  /authors/{id}:
+    get:
+      summary: Get an author
+      operationId: getAuthor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Author details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+
+components:
+  schemas:
+    # Post schemas
+    Post:
+      type: object
+      description: A blog post
+      required:
+        - id
+        - slug
+        - title
+        - content
+        - status
+        - author
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+          description: URL-friendly identifier
+          pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        excerpt:
+          type: string
+          description: Short summary of the post
+          maxLength: 500
+        content:
+          type: string
+          description: Full post content in Markdown
+        status:
+          $ref: '#/components/schemas/PostStatus'
+        author:
+          $ref: '#/components/schemas/Author'
+        tags:
+          type: array
+          items:
+            type: string
+        featuredImage:
+          $ref: '#/components/schemas/Image'
+        viewCount:
+          type: integer
+          description: Number of views
+          minimum: 0
+        commentCount:
+          type: integer
+          description: Number of comments
+          minimum: 0
+        publishedAt:
+          type: string
+          format: date-time
+          description: When the post was published
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PostStatus:
+      type: string
+      description: Publication status
+      enum:
+        - draft
+        - published
+        - archived
+
+    PostList:
+      type: object
+      description: Paginated list of posts
+      required:
+        - posts
+        - total
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        total:
+          type: integer
+          description: Total number of posts
+        hasMore:
+          type: boolean
+
+    CreatePostRequest:
+      type: object
+      description: Request to create a post
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          type: string
+          description: Custom slug (auto-generated if not provided)
+          pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+        excerpt:
+          type: string
+          maxLength: 500
+        content:
+          type: string
+        status:
+          $ref: '#/components/schemas/PostStatus'
+        tags:
+          type: array
+          items:
+            type: string
+        featuredImageUrl:
+          type: string
+          format: uri
+        publishedAt:
+          type: string
+          format: date-time
+          description: Schedule publish time
+
+    UpdatePostRequest:
+      type: object
+      description: Request to update a post
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        excerpt:
+          type: string
+          maxLength: 500
+        content:
+          type: string
+        status:
+          $ref: '#/components/schemas/PostStatus'
+        tags:
+          type: array
+          items:
+            type: string
+        featuredImageUrl:
+          type: string
+          format: uri
+          nullable: true
+
+    # Author schemas
+    Author:
+      type: object
+      description: A blog author
+      required:
+        - id
+        - name
+        - email
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        bio:
+          type: string
+          description: Author biography
+          maxLength: 1000
+        avatarUrl:
+          type: string
+          format: uri
+        website:
+          type: string
+          format: uri
+        socialLinks:
+          $ref: '#/components/schemas/SocialLinks'
+        postCount:
+          type: integer
+          description: Number of published posts
+
+    SocialLinks:
+      type: object
+      description: Social media links
+      properties:
+        twitter:
+          type: string
+        github:
+          type: string
+        linkedin:
+          type: string
+
+    # Comment schemas
+    Comment:
+      type: object
+      description: A comment on a post
+      required:
+        - id
+        - postId
+        - authorName
+        - content
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        postId:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+          description: Parent comment ID for replies
+        authorName:
+          type: string
+        authorEmail:
+          type: string
+          format: email
+        authorUrl:
+          type: string
+          format: uri
+        content:
+          type: string
+        approved:
+          type: boolean
+          description: Whether the comment is approved for display
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateCommentRequest:
+      type: object
+      description: Request to create a comment
+      required:
+        - authorName
+        - authorEmail
+        - content
+      properties:
+        parentId:
+          type: string
+          format: uuid
+        authorName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        authorEmail:
+          type: string
+          format: email
+        authorUrl:
+          type: string
+          format: uri
+        content:
+          type: string
+          minLength: 1
+          maxLength: 5000
+
+    # Shared schemas
+    Image:
+      type: object
+      description: An image
+      required:
+        - url
+        - alt
+      properties:
+        url:
+          type: string
+          format: uri
+        alt:
+          type: string
+        width:
+          type: integer
+        height:
+          type: integer
+        caption:
+          type: string
+
+    ErrorResponse:
+      type: object
+      description: API error response
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable message
+        details:
+          type: object
+          additionalProperties:
+            type: string
+          description: Field-specific error details
+        requestId:
+          type: string
+          description: Request ID for debugging
+

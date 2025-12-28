@@ -1,0 +1,79 @@
+openapi: "3.0.3"
+info:
+  title: Products API
+  version: "1.0.0"
+paths: {}
+components:
+  schemas:
+    Product:
+      type: object
+      required:
+        - id
+        - name
+        - price
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          $ref: '#/components/schemas/Price'
+        category:
+          $ref: '#/components/schemas/Category'
+
+    Price:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+        currency:
+          type: string
+          enum:
+            - USD
+            - EUR
+            - GBP
+
+    Category:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        parent:
+          $ref: '#/components/schemas/Category'
+
+    CreateProductRequest:
+      type: object
+      required:
+        - name
+        - price
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          $ref: '#/components/schemas/Price'
+        categoryId:
+          type: string
+
+    ProductList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        total:
+          type: integer
+

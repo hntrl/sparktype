@@ -1,0 +1,83 @@
+{
+  "$schema": "https://hntrl.github.io/sparktype/schema.json",
+  "specs": {
+    // Remote spec
+    "api": {
+      "path": "../basic/openapi.yaml"
+    },
+    // Inline utility types
+    "utils": {
+      "schemas": {
+        "Pagination": {
+          "type": "object",
+          "description": "Pagination parameters",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "description": "Current page number"
+            },
+            "pageSize": {
+              "type": "integer",
+              "description": "Items per page"
+            },
+            "total": {
+              "type": "integer",
+              "description": "Total items"
+            }
+          },
+          "required": [
+            "page",
+            "pageSize",
+            "total"
+          ]
+        },
+        "SortOrder": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "description": "Sort direction"
+        },
+        "ApiResponse": {
+          "type": "object",
+          "description": "Standard API response wrapper",
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "data": {},
+            "error": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "success"
+          ]
+        }
+      }
+    }
+  },
+  "outputs": [
+    {
+      "path": "./output/types.ts",
+      "format": "typescript",
+      "contents": [
+        // Inline utility types at root
+        "utils:Pagination",
+        "utils:SortOrder",
+        "utils:ApiResponse",
+        // API types in a namespace
+        {
+          "namespace": "API",
+          "contents": [
+            "api:User",
+            "api:UserRole",
+            "api:CreateUserRequest",
+            "api:UpdateUserRequest"
+          ]
+        }
+      ]
+    }
+  ]
+}

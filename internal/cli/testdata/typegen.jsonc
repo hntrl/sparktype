@@ -1,0 +1,16 @@
+{
+  // Test configuration
+  "specs": {
+    "api": {
+      "path": "./simple.yaml"
+    }
+  },
+  "outputs": [
+    {
+      "path": "./output/types.ts",
+      "format": "typescript",
+      "contents": ["api:*"]
+    }
+  ]
+}
+

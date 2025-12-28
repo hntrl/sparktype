@@ -1,0 +1,79 @@
+{
+  "$schema": "https://hntrl.github.io/sparktype/schema.json",
+  "specs": {
+    "users": {
+      "path": "./users-api.yaml"
+    },
+    "products": {
+      "path": "./products-api.yaml"
+    }
+  },
+  "outputs": [
+    // Users types only
+    {
+      "path": "./types/users.ts",
+      "format": "typescript",
+      "contents": [
+        "users:*"
+      ]
+    },
+    // Products types only  
+    {
+      "path": "./types/products.ts",
+      "format": "typescript",
+      "contents": [
+        "products:*"
+      ]
+    },
+    // Only request types from users
+    {
+      "path": "./types/users-requests.ts",
+      "format": "typescript",
+      "contents": [
+        "users:*Request"
+      ]
+    },
+    // All types organized by namespace
+    {
+      "path": "./types/all-namespaced.ts",
+      "format": "typescript",
+      "contents": [
+        // Users namespace
+        {
+          "namespace": "Users",
+          "contents": [
+            "users:User",
+            "users:UserProfile",
+            "users:UserSettings",
+            "users:CreateUserRequest",
+            "users:UpdateUserRequest"
+          ]
+        },
+        // Products namespace
+        {
+          "namespace": "Products",
+          "contents": [
+            "products:Product",
+            "products:Price",
+            "products:Category",
+            "products:CreateProductRequest",
+            "products:ProductList"
+          ]
+        }
+      ]
+    },
+    // Products excluding internal types (using explicit patterns)
+    {
+      "path": "./types/products-public.ts",
+      "format": "typescript",
+      "contents": [
+        "products:Product",
+        "products:Price",
+        "products:Category"
+      ]
+    }
+  ],
+  "options": {
+    "generateEnums": true
+  }
+}

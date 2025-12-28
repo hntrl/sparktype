@@ -1,0 +1,175 @@
+openapi: "3.0.3"
+info:
+  title: Example API
+  version: "1.0.0"
+  description: A sample API for testing sparktype
+paths:
+  /users:
+    get:
+      summary: List users
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+components:
+  schemas:
+    User:
+      type: object
+      description: A user in the system
+      required:
+        - id
+        - email
+        - role
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        email:
+          type: string
+          format: email
+          description: User's email address
+        name:
+          type: string
+          description: User's display name
+        role:
+          $ref: '#/components/schemas/UserRole'
+        address:
+          $ref: '#/components/schemas/Address'
+        createdAt:
+          type: string
+          format: date-time
+          description: When the user was created
+          readOnly: true
+        metadata:
+          type: object
+          description: Additional metadata
+          nullable: true
+
+    UserRole:
+      type: string
+      description: The role of a user
+      enum:
+        - admin
+        - user
+        - guest
+
+    Address:
+      type: object
+      description: A physical address
+      required:
+        - street
+        - city
+        - country
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+        zipCode:
+          type: string
+
+    CreateUserRequest:
+      type: object
+      description: Request body for creating a user
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    UpdateUserRequest:
+      type: object
+      description: Request body for updating a user
+      properties:
+        name:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        address:
+          $ref: '#/components/schemas/Address'
+
+    ApiError:
+      type: object
+      description: Standard API error response
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
+
+    PaginatedResponse:
+      type: object
+      description: A paginated response wrapper
+      required:
+        - data
+        - total
+        - page
+        - pageSize
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        total:
+          type: integer
+          description: Total number of items
+        page:
+          type: integer
+          description: Current page number
+        pageSize:
+          type: integer
+          description: Number of items per page
+
+    Status:
+      type: string
+      description: Resource status
+      enum:
+        - active
+        - inactive
+        - pending
+        - deleted
+

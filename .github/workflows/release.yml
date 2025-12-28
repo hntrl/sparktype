@@ -1,0 +1,150 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g., 1.2.3)"
+        required: true
+        type: string
+      dry_run:
+        description: "Dry run (skip actual publishing)"
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write # Required for npm provenance
+
+jobs:
+  release:
+    name: Release v${{ inputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate version format
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
+            echo "Expected format: X.Y.Z or X.Y.Z-prerelease"
+            exit 1
+          fi
+          echo "✅ Version format valid: $VERSION"
+
+      - name: Validate secrets
+        run: |
+          missing=()
+          [ -z "$NPM_TOKEN" ] && missing+=("NPM_TOKEN")
+          [ -z "$PYPI_TOKEN" ] && missing+=("PYPI_TOKEN")
+          [ -z "$HOMEBREW_TAP_TOKEN" ] && missing+=("HOMEBREW_TAP_TOKEN")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            exit 1
+          fi
+          echo "✅ All required secrets are configured"
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if tag exists
+        run: |
+          if git rev-parse "v${{ inputs.version }}" >/dev/null 2>&1; then
+            echo "❌ Tag v${{ inputs.version }} already exists"
+            exit 1
+          fi
+          echo "✅ Tag v${{ inputs.version }} does not exist"
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install build twine wheel
+
+      - name: Create and push tag
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}"
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean ${{ inputs.dry_run && '--skip=publish' || '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
+      - name: Verify build artifacts
+        run: |
+          echo "Verifying release artifacts..."
+          EXPECTED_PLATFORMS=("darwin_amd64" "darwin_arm64" "linux_amd64" "linux_arm64" "windows_amd64")
+          for platform in "${EXPECTED_PLATFORMS[@]}"; do
+            archive=$(ls dist/sparktype_*_${platform}.* 2>/dev/null | head -1)
+            if [ -z "$archive" ]; then
+              echo "::error::Missing archive for platform: $platform"
+              exit 1
+            fi
+            if [ ! -s "$archive" ]; then
+              echo "::error::Empty archive for platform: $platform"
+              exit 1
+            fi
+            echo "✅ $archive ($(stat -c%s "$archive") bytes)"
+          done
+          [ -f dist/checksums.txt ] || { echo "::error::Missing checksums.txt"; exit 1; }
+          echo "✅ All artifacts verified"
+
+      - name: Summary
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "## 🧪 Dry Run Complete" >> $GITHUB_STEP_SUMMARY
+            echo "Version **v${{ inputs.version }}** was validated but not published." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## 🚀 Release Complete" >> $GITHUB_STEP_SUMMARY
+            echo "Version **v${{ inputs.version }}** has been released!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Links" >> $GITHUB_STEP_SUMMARY
+            echo "- [GitHub Release](https://github.com/hntrl/sparktype/releases/tag/v${{ inputs.version }})" >> $GITHUB_STEP_SUMMARY
+            echo "- [npm package](https://www.npmjs.com/package/sparktype/v/${{ inputs.version }})" >> $GITHUB_STEP_SUMMARY
+            echo "- [PyPI package](https://pypi.org/project/sparktype/${{ inputs.version }}/)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+            echo "Binary artifacts have been uploaded to the GitHub release." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Rollback tag on failure
+        if: failure() && !inputs.dry_run
+        run: |
+          echo "::warning::Release failed, rolling back tag v${{ inputs.version }}"
+          git push --delete origin "v${{ inputs.version }}" || true
