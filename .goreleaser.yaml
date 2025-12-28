@@ -68,7 +68,7 @@ brews:
   - name: sparktype
     repository:
       owner: hntrl
-      name: homebrew-sparktype
+      name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     directory: Formula
     homepage: https://github.com/hntrl/sparktype
