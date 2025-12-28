@@ -2,45 +2,33 @@ version: "2"
 
 run:
   timeout: 5m
-  modules-download-mode: readonly
 
 linters:
-  enable:
-    # Default linters
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
-
-    # Additional linters
-    - bodyclose
-    - dogsled
-    - dupl
-    - gochecknoinits
-    - goconst
-    - gocritic
-    - gocyclo
-    - goprintffuncname
-    - gosec
-    - misspell
-    - nakedret
-    - noctx
-    - nolintlint
-    - prealloc
-    - revive
-    - unconvert
-    - unparam
-    - whitespace
+  default: all
+  disable:
+    - wsl
+    - nlreturn
+    - gochecknoglobals
+    - funlen
+    - gocognit
+    - cyclop
+    - maintidx
+    - lll
+    - varnamelen
+    - ireturn
+    - exhaustruct
+    - depguard
+    - tagliatelle
+    - godox
+    - err113
+    - wrapcheck
+    - testpackage
+    - paralleltest
+    - tparallel
+    - nilerr
 
   settings:
-    errcheck:
-      check-type-assertions: true
-      check-blank: true
-
     govet:
-      enable-all: true
       disable:
         - fieldalignment
 
@@ -52,10 +40,6 @@ linters:
       min-occurrences: 3
 
     gocritic:
-      enabled-tags:
-        - diagnostic
-        - performance
-        - style
       disabled-checks:
         - hugeParam
         - rangeValCopy
