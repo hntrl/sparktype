@@ -77,12 +77,15 @@ func runGenerateOnce(cfgPath string) error {
 		return fmt.Errorf("invalid config: %w", err)
 	}
 
+	// Get base path for resolving relative paths
+	basePath := filepath.Dir(cfgPath)
+
 	// Create spec registry
-	registry := spec.NewRegistry(cfg.Specs, filepath.Dir(cfgPath))
+	registry := spec.NewRegistry(cfg.Specs, basePath)
 
 	// Process each output
 	for _, output := range cfg.Outputs {
-		if err := processOutput(registry, output, cfg.Options); err != nil {
+		if err := processOutput(registry, output, cfg.Options, basePath); err != nil {
 			return fmt.Errorf("failed to process output %s: %w", output.Path, err)
 		}
 		fmt.Printf("Generated: %s\n", output.Path)
@@ -154,7 +157,7 @@ func runWatch(cfgPath string) error {
 	return nil
 }
 
-func processOutput(registry *spec.Registry, output config.Output, globalOpts config.Options) error {
+func processOutput(registry *spec.Registry, output config.Output, globalOpts config.Options, basePath string) error {
 	// Create content resolver
 	resolver := contents.NewResolver(registry)
 
@@ -182,14 +185,20 @@ func processOutput(registry *spec.Registry, output config.Output, globalOpts con
 		return fmt.Errorf("generating %s: %w", output.Path, err)
 	}
 
+	// Resolve output path relative to config directory
+	outputPath := output.Path
+	if !filepath.IsAbs(outputPath) {
+		outputPath = filepath.Join(basePath, outputPath)
+	}
+
 	// Ensure output directory exists
-	outputDir := filepath.Dir(output.Path)
+	outputDir := filepath.Dir(outputPath)
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return fmt.Errorf("creating directory %s: %w", outputDir, err)
 	}
 
 	// Write output file
-	if err := os.WriteFile(output.Path, content, 0644); err != nil {
+	if err := os.WriteFile(outputPath, content, 0644); err != nil {
 		return fmt.Errorf("writing %s: %w", output.Path, err)
 	}
 

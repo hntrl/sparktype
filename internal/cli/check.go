@@ -54,15 +54,18 @@ func runCheck(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid config: %w", err)
 	}
 
+	// Get base path for resolving relative paths
+	basePath := filepath.Dir(cfgPath)
+
 	// Create spec registry
-	registry := spec.NewRegistry(cfg.Specs, filepath.Dir(cfgPath))
+	registry := spec.NewRegistry(cfg.Specs, basePath)
 
 	// Track mismatches
 	var mismatches int
 
 	// Process each output
 	for _, output := range cfg.Outputs {
-		result, err := checkOutput(registry, output, cfg.Options)
+		result, err := checkOutput(registry, output, cfg.Options, basePath)
 		if err != nil {
 			fmt.Printf("Checking %s... ERROR\n", output.Path)
 			fmt.Printf("  %v\n", err)
@@ -97,9 +100,15 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func checkOutput(registry *spec.Registry, output config.Output, globalOpts config.Options) (*generators.CompareResult, error) {
+func checkOutput(registry *spec.Registry, output config.Output, globalOpts config.Options, basePath string) (*generators.CompareResult, error) {
+	// Resolve output path relative to config directory
+	outputPath := output.Path
+	if !filepath.IsAbs(outputPath) {
+		outputPath = filepath.Join(basePath, outputPath)
+	}
+
 	// Read existing file
-	existing, err := os.ReadFile(output.Path)
+	existing, err := os.ReadFile(outputPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil // File doesn't exist

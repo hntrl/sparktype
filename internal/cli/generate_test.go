@@ -38,7 +38,7 @@ func TestProcessOutput_TypeScript(t *testing.T) {
 		Contents: []config.ContentItem{{Pattern: "api:*"}},
 	}
 
-	err = processOutput(registry, output, config.Options{})
+	err = processOutput(registry, output, config.Options{}, tmpDir)
 	if err != nil {
 		t.Fatalf("processOutput failed: %v", err)
 	}
@@ -84,7 +84,7 @@ func TestProcessOutput_Zod(t *testing.T) {
 		Contents: []config.ContentItem{{Pattern: "api:*"}},
 	}
 
-	err = processOutput(registry, output, config.Options{})
+	err = processOutput(registry, output, config.Options{}, tmpDir)
 	if err != nil {
 		t.Fatalf("processOutput failed: %v", err)
 	}
@@ -128,7 +128,7 @@ func TestProcessOutput_Python(t *testing.T) {
 		Contents: []config.ContentItem{{Pattern: "api:*"}},
 	}
 
-	err = processOutput(registry, output, config.Options{})
+	err = processOutput(registry, output, config.Options{}, tmpDir)
 	if err != nil {
 		t.Fatalf("processOutput failed: %v", err)
 	}
@@ -172,7 +172,7 @@ func TestProcessOutput_Go(t *testing.T) {
 		Contents: []config.ContentItem{{Pattern: "api:*"}},
 	}
 
-	err = processOutput(registry, output, config.Options{})
+	err = processOutput(registry, output, config.Options{}, tmpDir)
 	if err != nil {
 		t.Fatalf("processOutput failed: %v", err)
 	}
@@ -215,7 +215,7 @@ func TestProcessOutput_InvalidFormat(t *testing.T) {
 		Contents: []config.ContentItem{{Pattern: "api:*"}},
 	}
 
-	err = processOutput(registry, output, config.Options{})
+	err = processOutput(registry, output, config.Options{}, tmpDir)
 	if err == nil {
 		t.Error("expected error for invalid format, got nil")
 	}
@@ -239,7 +239,7 @@ func TestProcessOutput_InvalidPattern(t *testing.T) {
 		Contents: []config.ContentItem{{Pattern: "nonexistent:*"}},
 	}
 
-	err = processOutput(registry, output, config.Options{})
+	err = processOutput(registry, output, config.Options{}, tmpDir)
 	if err == nil {
 		t.Error("expected error for nonexistent spec, got nil")
 	}
@@ -260,8 +260,7 @@ func TestRunGenerateOnce(t *testing.T) {
 	specContent, _ := os.ReadFile(filepath.Join(testDataDir, "simple.yaml"))
 	os.WriteFile(filepath.Join(tmpDir, "simple.yaml"), specContent, 0644)
 
-	// Use absolute output path since processOutput writes relative to cwd
-	outputPath := filepath.Join(tmpDir, "output", "types.ts")
+	// Use relative output path - this tests that paths are resolved relative to config
 	configContent := `{
   "specs": {
     "api": {
@@ -270,7 +269,7 @@ func TestRunGenerateOnce(t *testing.T) {
   },
   "outputs": [
     {
-      "path": "` + strings.ReplaceAll(outputPath, "\\", "\\\\") + `",
+      "path": "./output/types.ts",
       "format": "typescript",
       "contents": ["api:*"]
     }
@@ -285,7 +284,8 @@ func TestRunGenerateOnce(t *testing.T) {
 		t.Fatalf("runGenerateOnce failed: %v", err)
 	}
 
-	// Verify output was created
+	// Verify output was created (resolved relative to config directory)
+	outputPath := filepath.Join(tmpDir, "output", "types.ts")
 	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
 		t.Error("output file was not created")
 	}
