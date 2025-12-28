@@ -25,6 +25,7 @@ pnpm-debug.log*
 .yarn/cache
 .yarn/unplugged
 .pnp.*
+.npmrc
 
 # VitePress (docs)
 docs/.vitepress/cache/

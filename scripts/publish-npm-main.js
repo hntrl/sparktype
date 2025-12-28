@@ -51,10 +51,33 @@ function writePackageJson(filePath, pkg) {
 }
 
 /**
+ * Create .npmrc file for authentication
+ */
+function ensureNpmAuth(pkgDir) {
+  const token = process.env.NODE_AUTH_TOKEN || process.env.NPM_TOKEN;
+  if (!token) {
+    return false;
+  }
+  const npmrcPath = path.join(pkgDir, ".npmrc");
+  const npmrcContent = `//registry.npmjs.org/:_authToken=${token}\n`;
+  fs.writeFileSync(npmrcPath, npmrcContent);
+  return true;
+}
+
+/**
  * Publish a package to npm
  */
 function publishPackage(pkgDir, pkgName) {
   try {
+    // Ensure npm authentication is configured
+    if (!ensureNpmAuth(pkgDir)) {
+      return {
+        success: false,
+        skipped: false,
+        error: "NPM_TOKEN or NODE_AUTH_TOKEN environment variable not set",
+      };
+    }
+
     const args = ["publish", "--access", "public"];
     if (process.env.GITHUB_ACTIONS) {
       args.push("--provenance");
