@@ -300,6 +300,74 @@ If you have internal types prefixed with `_` or `Internal`, list only public typ
 ]
 ```
 
+## Automatic Dependencies
+
+When you include a schema that references other schemas, sparktype automatically includes those dependencies. This ensures your generated output is always complete and valid.
+
+```jsonc
+"contents": [
+  "api:Order"  // If Order references User and Product, they're auto-included
+]
+```
+
+### How It Works
+
+1. **Direct references** - If `Order` has a `user` property of type `User`, the `User` schema is automatically included
+2. **Transitive dependencies** - If `User` references `Address`, that's included too
+3. **Same namespace** - Auto-included schemas are placed in the same namespace as the schema that first references them
+
+### Example
+
+If your spec has these schemas:
+
+```yaml
+Order:
+  properties:
+    user:
+      $ref: '#/components/schemas/User'
+    items:
+      type: array
+      items:
+        $ref: '#/components/schemas/OrderItem'
+
+User:
+  properties:
+    address:
+      $ref: '#/components/schemas/Address'
+```
+
+And your config only explicitly includes `Order`:
+
+```jsonc
+"contents": [
+  {
+    "namespace": "API",
+    "contents": ["api:Order"]
+  }
+]
+```
+
+The output will include `Order`, `User`, `OrderItem`, and `Address` - all in the `API` namespace.
+
+### Explicit Control
+
+If you want to organize dependencies into different namespaces, include them explicitly:
+
+```jsonc
+"contents": [
+  {
+    "namespace": "Models",
+    "contents": ["api:User", "api:Address"]
+  },
+  {
+    "namespace": "Orders",
+    "contents": ["api:Order", "api:OrderItem"]
+  }
+]
+```
+
+When a schema is explicitly included, it won't be auto-included elsewhere - the explicit placement takes precedence.
+
 ## Cross-References
 
 When schemas reference each other across namespaces, sparktype automatically resolves the correct reference path:
