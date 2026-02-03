@@ -124,50 +124,78 @@ function ensureNpmAuth(pkgDir) {
 }
 
 /**
- * Publish a package to npm
+ * Sleep for specified milliseconds
  */
-function publishPackage(pkgDir, pkgName) {
-  try {
-    // Ensure npm authentication is configured
-    if (!ensureNpmAuth(pkgDir)) {
-      return {
-        success: false,
-        skipped: false,
-        error: "NPM_TOKEN or NODE_AUTH_TOKEN environment variable not set",
-      };
-    }
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-    const args = ["publish", "--access", "public"];
-    if (process.env.GITHUB_ACTIONS) {
-      args.push("--provenance");
-    }
-
-    execSync(`npm ${args.join(" ")}`, {
-      cwd: pkgDir,
-      stdio: ["pipe", "pipe", "pipe"],
-      env: { ...process.env },
-    });
-
-    return { success: true, skipped: false };
-  } catch (err) {
-    const output = err.stderr?.toString() || err.stdout?.toString() || "";
-
-    if (
-      /previously published|cannot publish over|already exists|EPUBLISHCONFLICT/i.test(
-        output
-      )
-    ) {
-      return { success: true, skipped: true };
-    }
-
-    return { success: false, skipped: false, error: output };
+/**
+ * Publish a package to npm with retry logic for E409 conflicts
+ */
+async function publishPackage(pkgDir, pkgName, maxRetries = 5) {
+  // Ensure npm authentication is configured
+  if (!ensureNpmAuth(pkgDir)) {
+    return {
+      success: false,
+      skipped: false,
+      error: "NPM_TOKEN or NODE_AUTH_TOKEN environment variable not set",
+    };
   }
+
+  const args = ["publish", "--access", "public"];
+  if (process.env.GITHUB_ACTIONS) {
+    args.push("--provenance");
+  }
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      execSync(`npm ${args.join(" ")}`, {
+        cwd: pkgDir,
+        stdio: ["pipe", "pipe", "pipe"],
+        env: { ...process.env },
+      });
+
+      return { success: true, skipped: false };
+    } catch (err) {
+      const output = err.stderr?.toString() || err.stdout?.toString() || "";
+
+      // Check if already published
+      if (
+        /previously published|cannot publish over|already exists|EPUBLISHCONFLICT/i.test(
+          output
+        )
+      ) {
+        return { success: true, skipped: true };
+      }
+
+      // Check for E409 conflict - registry still processing previous package
+      if (/E409|409 Conflict/i.test(output)) {
+        if (attempt < maxRetries) {
+          const delaySeconds = attempt * 10; // 10s, 20s, 30s, 40s...
+          log(
+            `⏳ Registry conflict for ${pkgName}, retrying in ${delaySeconds}s (attempt ${attempt}/${maxRetries})...`
+          );
+          await sleep(delaySeconds * 1000);
+          continue;
+        }
+      }
+
+      return { success: false, skipped: false, error: output };
+    }
+  }
+
+  return {
+    success: false,
+    skipped: false,
+    error: `Failed after ${maxRetries} attempts`,
+  };
 }
 
 /**
  * Publish a single platform package
  */
-function publishPlatformPackage(version, platformId, config) {
+async function publishPlatformPackage(version, platformId, config) {
   const npmKey = config.npm.key;
   const goOs = config.go.os;
   const goArch = config.go.arch;
@@ -225,7 +253,7 @@ function publishPlatformPackage(version, platformId, config) {
   writePackageJson(packageJsonPath, pkg);
 
   // Publish
-  const result = publishPackage(platformDir, `@sparktype/${npmKey}`);
+  const result = await publishPackage(platformDir, `@sparktype/${npmKey}`);
 
   if (result.success) {
     if (result.skipped) {
@@ -246,7 +274,7 @@ function publishPlatformPackage(version, platformId, config) {
 /**
  * Publish the main sparktype package
  */
-function publishMainPackage(version) {
+async function publishMainPackage(version) {
   log(`\n📦 Publishing main sparktype package...`);
 
   // Read main package.json
@@ -273,7 +301,7 @@ function publishMainPackage(version) {
   log(`Updated package.json with version ${version}`);
 
   // Publish
-  const result = publishPackage(NPM_DIR, "sparktype");
+  const result = await publishPackage(NPM_DIR, "sparktype");
 
   if (result.success) {
     if (result.skipped) {
@@ -291,6 +319,9 @@ function publishMainPackage(version) {
   }
 }
 
+// Delay between publishing packages to avoid npm registry conflicts (in ms)
+const PUBLISH_DELAY_MS = 15000; // 15 seconds
+
 async function main() {
   const version = process.argv[2];
 
@@ -303,14 +334,22 @@ async function main() {
   log(`🚀 Publishing npm packages v${version}`);
   log(`================================================`);
 
-  // Publish all platform packages first
+  // Publish all platform packages first (sequentially with delays)
   let allSucceeded = true;
   const platforms = Object.entries(platformsConfig.platforms);
 
-  log(`\nPublishing ${platforms.length} platform packages...`);
+  log(`\nPublishing ${platforms.length} platform packages sequentially...`);
 
-  for (const [platformId, config] of platforms) {
-    const succeeded = publishPlatformPackage(version, platformId, config);
+  for (let i = 0; i < platforms.length; i++) {
+    const [platformId, config] = platforms[i];
+
+    // Add delay between publishes (except for the first one)
+    if (i > 0) {
+      log(`\n⏳ Waiting ${PUBLISH_DELAY_MS / 1000}s before next publish...`);
+      await sleep(PUBLISH_DELAY_MS);
+    }
+
+    const succeeded = await publishPlatformPackage(version, platformId, config);
     if (!succeeded) {
       allSucceeded = false;
       // Continue with other platforms even if one fails
@@ -322,9 +361,13 @@ async function main() {
     process.exit(1);
   }
 
+  // Wait before publishing main package
+  log(`\n⏳ Waiting ${PUBLISH_DELAY_MS / 1000}s before publishing main package...`);
+  await sleep(PUBLISH_DELAY_MS);
+
   // Publish main package after all platforms succeed
   log(`\n================================================`);
-  const mainSucceeded = publishMainPackage(version);
+  const mainSucceeded = await publishMainPackage(version);
 
   if (!mainSucceeded) {
     process.exit(1);
