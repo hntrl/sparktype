@@ -58,7 +58,11 @@ func (n *Namespace) Serialize() string {
 	var lines []string
 	lines = append(lines, fmt.Sprintf("export namespace %s {", n.Name))
 
-	for _, child := range n.Children {
+	for i, child := range n.Children {
+		// Add blank line between children (not before first)
+		if i > 0 {
+			lines = append(lines, "")
+		}
 		// Indent each line of child output
 		childOutput := child.Serialize()
 		for _, line := range strings.Split(childOutput, "\n") {
@@ -101,8 +105,12 @@ func (i *Interface) Serialize() string {
 		lines = append(lines, fmt.Sprintf("export interface %s {", i.Name))
 	}
 
-	// Properties
-	for _, prop := range i.Properties {
+	// Properties - add blank line between properties that have descriptions
+	for idx, prop := range i.Properties {
+		// Add blank line before property if it has a description (except first)
+		if idx > 0 && prop.Description != "" {
+			lines = append(lines, "")
+		}
 		propOutput := prop.Serialize()
 		for _, line := range strings.Split(propOutput, "\n") {
 			lines = append(lines, "  "+line)
