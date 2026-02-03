@@ -17,7 +17,7 @@ export namespace Users {
 
   export interface UserSettings {
     notifications?: boolean;
-    theme?: string;
+    theme?: "light" | "dark";
   }
 
   export interface CreateUserRequest {
@@ -43,7 +43,7 @@ export namespace Products {
 
   export interface Price {
     amount: number;
-    currency: string;
+    currency: "USD" | "EUR" | "GBP";
   }
 
   export interface Category {
