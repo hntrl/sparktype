@@ -227,6 +227,15 @@ func BuildTypeExpr(schema spec.Schema, ctx *BuildContext, namespacePath []string
 		return ReferenceType{Name: resolvedRef}
 	}
 
+	// Handle inline enums (enums defined directly on a property, not as a named schema)
+	if len(schema.Enum) > 0 {
+		types := make([]TypeExpr, len(schema.Enum))
+		for i, val := range schema.Enum {
+			types[i] = LiteralType{Value: val}
+		}
+		return UnionType{Types: types}
+	}
+
 	// Handle composition
 	if len(schema.AllOf) > 0 {
 		types := make([]TypeExpr, len(schema.AllOf))

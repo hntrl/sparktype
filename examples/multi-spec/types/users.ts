@@ -25,5 +25,5 @@ export interface UserProfile {
 
 export interface UserSettings {
   notifications?: boolean;
-  theme?: string;
+  theme?: "light" | "dark";
 }
