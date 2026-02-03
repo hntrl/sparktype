@@ -9,3 +9,14 @@ export interface UpdateUserRequest {
   name?: string;
   profile?: UserProfile;
 }
+
+export interface UserProfile {
+  avatar?: string;
+  bio?: string;
+  settings?: UserSettings;
+}
+
+export interface UserSettings {
+  notifications?: boolean;
+  theme?: string;
+}

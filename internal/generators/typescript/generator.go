@@ -263,8 +263,10 @@ func BuildTypeExpr(schema spec.Schema, ctx *BuildContext, namespacePath []string
 		return RecordType{Key: StringType{}, Value: UnknownType{}}
 	}
 
-	// Handle inline objects
-	if schema.IsObject() && schema.Name == "" {
+	// Handle inline objects (objects with properties that aren't refs)
+	// Note: We check for properties rather than schema.Name == "" because inline
+	// property schemas may have the property name set as their Name.
+	if len(schema.Properties) > 0 && schema.Ref == "" {
 		properties := make([]Property, len(schema.Properties))
 		for i, prop := range schema.Properties {
 			properties[i] = Property{
