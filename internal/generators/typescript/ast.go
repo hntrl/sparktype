@@ -254,6 +254,13 @@ type UnknownType struct{}
 func (UnknownType) Serialize() string { return "unknown" }
 func (UnknownType) isTypeExpr()       {}
 
+// WidenedStringType represents (string & {}) for widening string literal unions
+// This allows any string while still providing autocomplete for known literals
+type WidenedStringType struct{}
+
+func (WidenedStringType) Serialize() string { return "(string & {})" }
+func (WidenedStringType) isTypeExpr()       {}
+
 // ArrayType represents Array<T>
 type ArrayType struct {
 	Element TypeExpr

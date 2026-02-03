@@ -202,6 +202,10 @@
               "type": "boolean",
               "description": "Mark all properties as readonly (typescript format only)"
             },
+            "widenEnums": {
+              "type": "boolean",
+              "description": "Add (string & {}) to string enum unions for forward compatibility (typescript format only)"
+            },
             "inferTypes": {
               "type": "boolean",
               "description": "Generate TypeScript interfaces alongside Zod schemas (zod format only). Interfaces use indexed types to reference schema types with JSDoc comments."
