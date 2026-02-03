@@ -125,6 +125,23 @@ func deepCopySchema(s Schema) Schema {
 	return result
 }
 
+// GetSchema returns a single schema by name from a specific spec.
+// Returns an error if the spec doesn't exist or the schema isn't found.
+func (r *Registry) GetSchema(specName string, schemaName string) (Schema, error) {
+	schemas, err := r.GetSchemas(specName)
+	if err != nil {
+		return Schema{}, err
+	}
+
+	for _, schema := range schemas {
+		if schema.Name == schemaName {
+			return schema, nil
+		}
+	}
+
+	return Schema{}, fmt.Errorf("schema %q not found in spec %q", schemaName, specName)
+}
+
 // GetAllSpecNames returns all configured spec names
 func (r *Registry) GetAllSpecNames() []string {
 	names := make([]string, 0, len(r.specs))
