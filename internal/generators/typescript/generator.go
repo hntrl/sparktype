@@ -287,10 +287,10 @@ func BuildTypeExpr(schema spec.Schema, ctx *BuildContext, namespacePath []string
 	case "null":
 		return NullType{}
 	default:
-		if schema.Name != "" {
-			resolvedRef := ctx.tree.GetRelativeRef(namespacePath, schema.Name)
-			return ReferenceType{Name: resolvedRef}
-		}
+		// Schemas with no type information are treated as unknown.
+		// Note: schema.Name being set does NOT indicate a reference - that's what
+		// schema.Ref is for. The Name field is just the schema's declared name,
+		// which may come from the property name for inline schemas.
 		return UnknownType{}
 	}
 }

@@ -285,27 +285,30 @@ func convertSchema(name string, s *openapi3.Schema, specName string) Schema {
 	}
 
 	// Handle composition
+	// Important: Check .Ref first before .Value to avoid infinite recursion.
+	// kin-openapi resolves refs and populates both .Ref and .Value, so if we
+	// check .Value first we'll recurse into circular references.
 	for _, allOf := range s.AllOf {
-		if allOf.Value != nil {
+		if allOf.Ref != "" {
+			schema.AllOf = append(schema.AllOf, Schema{Ref: allOf.Ref, SourceSpec: specName})
+		} else if allOf.Value != nil {
 			schema.AllOf = append(schema.AllOf, convertSchema("", allOf.Value, specName))
-		} else if allOf.Ref != "" {
-			schema.AllOf = append(schema.AllOf, Schema{Ref: allOf.Ref})
 		}
 	}
 
 	for _, oneOf := range s.OneOf {
-		if oneOf.Value != nil {
+		if oneOf.Ref != "" {
+			schema.OneOf = append(schema.OneOf, Schema{Ref: oneOf.Ref, SourceSpec: specName})
+		} else if oneOf.Value != nil {
 			schema.OneOf = append(schema.OneOf, convertSchema("", oneOf.Value, specName))
-		} else if oneOf.Ref != "" {
-			schema.OneOf = append(schema.OneOf, Schema{Ref: oneOf.Ref})
 		}
 	}
 
 	for _, anyOf := range s.AnyOf {
-		if anyOf.Value != nil {
+		if anyOf.Ref != "" {
+			schema.AnyOf = append(schema.AnyOf, Schema{Ref: anyOf.Ref, SourceSpec: specName})
+		} else if anyOf.Value != nil {
 			schema.AnyOf = append(schema.AnyOf, convertSchema("", anyOf.Value, specName))
-		} else if anyOf.Ref != "" {
-			schema.AnyOf = append(schema.AnyOf, Schema{Ref: anyOf.Ref})
 		}
 	}
 
