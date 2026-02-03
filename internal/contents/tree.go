@@ -94,6 +94,7 @@ func NewResolver(registry *spec.Registry) *Resolver {
 //  3. Filtering schemas using glob pattern matching
 //  4. Building the hierarchical tree structure with namespaces
 //  5. Recording namespace paths for each schema
+//  6. Auto-including any referenced schemas not explicitly included (dependencies)
 //
 // Returns an error if any pattern is malformed, references an unknown spec,
 // or uses an invalid glob pattern.
@@ -108,6 +109,12 @@ func (r *Resolver) Resolve(contents []config.ContentItem) (*ResolvedTree, error)
 	}
 
 	tree.Nodes = nodes
+
+	// Auto-include any referenced schemas that aren't explicitly included
+	if err := r.resolveDependencies(tree); err != nil {
+		return nil, err
+	}
+
 	return tree, nil
 }
 
@@ -286,4 +293,146 @@ func collectSchemas(nodes []Node, schemas *[]spec.Schema) {
 			collectSchemas(node.Namespace.Children, schemas)
 		}
 	}
+}
+
+// refInfo tracks information about a referenced schema for dependency resolution.
+type refInfo struct {
+	sourceSpec    string
+	namespacePath []string
+}
+
+// resolveDependencies finds and adds any schemas referenced by the tree's schemas
+// but not explicitly included. This ensures the generated output is complete.
+//
+// Dependencies are added to the same namespace as the schema that first references them.
+// The process repeats until no new dependencies are found (handling transitive deps).
+func (r *Resolver) resolveDependencies(tree *ResolvedTree) error {
+	for {
+		// Build set of currently included schema names
+		included := make(map[string]bool)
+		for _, schema := range tree.CollectAllSchemas() {
+			included[schema.Name] = true
+		}
+
+		// Find all references and their referencing schema's namespace
+		// Map: refName -> refInfo
+		missingRefs := make(map[string]refInfo)
+
+		collectMissingRefs(tree.Nodes, []string{}, included, missingRefs)
+
+		// If no missing references, we're done
+		if len(missingRefs) == 0 {
+			break
+		}
+
+		// Load and add missing schemas
+		for refName, info := range missingRefs {
+			schema, err := r.registry.GetSchema(info.sourceSpec, refName)
+			if err != nil {
+				// Schema not found in spec - skip it (will remain as unresolved reference)
+				continue
+			}
+
+			// Add schema to the appropriate namespace
+			if err := addSchemaToNamespace(tree, schema, info.namespacePath); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// collectMissingRefs finds all schema references that aren't in the included set.
+// It records the source spec and namespace path for each missing reference.
+func collectMissingRefs(nodes []Node, namespacePath []string, included map[string]bool, missingRefs map[string]refInfo) {
+	for _, node := range nodes {
+		if node.IsSchema() {
+			collectSchemaRefs(*node.Schema, namespacePath, included, missingRefs)
+		} else if node.IsNamespace() {
+			childPath := append([]string{}, namespacePath...)
+			childPath = append(childPath, node.Namespace.Name)
+			collectMissingRefs(node.Namespace.Children, childPath, included, missingRefs)
+		}
+	}
+}
+
+// collectSchemaRefs finds all references within a schema and adds missing ones to the map.
+func collectSchemaRefs(schema spec.Schema, namespacePath []string, included map[string]bool, missingRefs map[string]refInfo) {
+	// Check direct ref
+	if schema.Ref != "" {
+		refName := extractRefName(schema.Ref)
+		if !included[refName] {
+			if _, exists := missingRefs[refName]; !exists {
+				missingRefs[refName] = refInfo{schema.SourceSpec, namespacePath}
+			}
+		}
+	}
+
+	// Check properties
+	for _, prop := range schema.Properties {
+		collectSchemaRefs(prop.Schema, namespacePath, included, missingRefs)
+	}
+
+	// Check array items
+	if schema.Items != nil {
+		collectSchemaRefs(*schema.Items, namespacePath, included, missingRefs)
+	}
+
+	// Check composition types
+	for _, s := range schema.AllOf {
+		collectSchemaRefs(s, namespacePath, included, missingRefs)
+	}
+	for _, s := range schema.OneOf {
+		collectSchemaRefs(s, namespacePath, included, missingRefs)
+	}
+	for _, s := range schema.AnyOf {
+		collectSchemaRefs(s, namespacePath, included, missingRefs)
+	}
+}
+
+// extractRefName extracts the schema name from a $ref path.
+// Transforms: "#/components/schemas/User" -> "User"
+func extractRefName(ref string) string {
+	parts := strings.Split(ref, "/")
+	if len(parts) > 0 {
+		return parts[len(parts)-1]
+	}
+	return ref
+}
+
+// addSchemaToNamespace adds a schema to the specified namespace path in the tree.
+// If namespacePath is empty, adds to root level.
+func addSchemaToNamespace(tree *ResolvedTree, schema spec.Schema, namespacePath []string) error {
+	// Track the namespace for this schema
+	tree.SchemaNamespaces[schema.Name] = namespacePath
+
+	if len(namespacePath) == 0 {
+		// Add to root level
+		tree.Nodes = append(tree.Nodes, Node{Schema: &schema})
+		return nil
+	}
+
+	// Find or create the namespace path
+	nodes := &tree.Nodes
+	for _, nsName := range namespacePath {
+		found := false
+		for i := range *nodes {
+			if (*nodes)[i].IsNamespace() && (*nodes)[i].Namespace.Name == nsName {
+				nodes = &(*nodes)[i].Namespace.Children
+				found = true
+				break
+			}
+		}
+		if !found {
+			// This shouldn't happen if dependencies come from schemas in existing namespaces
+			// but handle it gracefully by creating the namespace
+			newNs := &NamespaceNode{Name: nsName, Children: []Node{}}
+			*nodes = append(*nodes, Node{Namespace: newNs})
+			nodes = &newNs.Children
+		}
+	}
+
+	*nodes = append(*nodes, Node{Schema: &schema})
+	return nil
 }

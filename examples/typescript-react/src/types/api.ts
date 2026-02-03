@@ -9,6 +9,7 @@ export interface AddToCartRequest {
 /** Physical address */
 export interface Address {
   city: string;
+
   /** ISO 3166-1 alpha-2 country code */
   country: string;
   line1: string;
@@ -22,8 +23,10 @@ export interface ApiError {
   /** Machine-readable error code */
   code: string;
   details?: Array<ErrorDetail>;
+
   /** Human-readable error message */
   message: string;
+
   /** Request ID for debugging */
   requestId?: string;
 }
@@ -31,9 +34,11 @@ export interface ApiError {
 /** Shopping cart */
 export interface Cart {
   id: string;
+
   /** Total number of items in cart */
   itemCount?: number;
   items: Array<CartItem>;
+
   /** Price with currency */
   subtotal: Price;
 }
@@ -42,6 +47,7 @@ export interface Cart {
 export interface CartItem {
   /** Price with currency */
   price: Price;
+
   /** A product available for purchase */
   product?: Product;
   productId: string;
@@ -53,6 +59,7 @@ export interface CreateOrderRequest {
   /** Physical address */
   billingAddress?: Address;
   notes?: string;
+
   /** Physical address */
   shippingAddress: Address;
 }
@@ -64,7 +71,7 @@ export interface CreateProductRequest {
   description?: string;
   images?: Array<{ alt: string; isPrimary?: boolean; url: string }>;
   name: string;
-  price: price;
+  price: { amount: number; currency?: string };
   stockCount?: number;
   tags?: Array<string>;
 }
@@ -73,8 +80,10 @@ export interface CreateProductRequest {
 export interface ErrorDetail {
   /** Error code for this field */
   code?: string;
+
   /** Field that caused the error */
   field: string;
+
   /** Error description */
   message: string;
 }
@@ -86,10 +95,13 @@ export interface Order {
   createdAt: string;
   id: string;
   items: Array<OrderItem>;
+
   /** Physical address */
   shippingAddress: Address;
+
   /** Order status */
   status: OrderStatus;
+
   /** Price with currency */
   total: Price;
   updatedAt?: string;
@@ -100,8 +112,10 @@ export interface OrderItem {
   productId: string;
   productName: string;
   quantity: number;
+
   /** Price with currency */
   totalPrice: Price;
+
   /** Price with currency */
   unitPrice: Price;
 }
@@ -120,8 +134,10 @@ export enum OrderStatus {
 export interface Price {
   /** Price amount in smallest currency unit (cents) */
   amount: number;
+
   /** ISO 4217 currency code */
   currency: string;
+
   /** Human-readable formatted price */
   readonly formatted?: string;
 }
@@ -131,17 +147,23 @@ export interface Product {
   /** Product category */
   category: ProductCategory;
   readonly createdAt?: string;
+
   /** Detailed product description */
   description?: string;
+
   /** Unique product identifier */
   id: string;
   images?: Array<ProductImage>;
+
   /** Whether the product is currently in stock */
   inStock: boolean;
+
   /** Product name */
   name: string;
+
   /** Price with currency */
   price: Price;
+
   /** Number of items in stock */
   stockCount?: number;
   tags?: Array<string>;
@@ -170,6 +192,7 @@ export interface ProductListResponse {
   items: Array<Product>;
   limit: number;
   offset: number;
+
   /** Total number of products matching the query */
   total: number;
 }

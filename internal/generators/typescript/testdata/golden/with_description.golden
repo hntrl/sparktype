@@ -4,6 +4,7 @@
 export interface User {
   /** Unique identifier */
   id: number;
+
   /** User's display name */
   name: string;
 }

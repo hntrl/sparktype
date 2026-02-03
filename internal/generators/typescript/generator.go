@@ -263,8 +263,10 @@ func BuildTypeExpr(schema spec.Schema, ctx *BuildContext, namespacePath []string
 		return RecordType{Key: StringType{}, Value: UnknownType{}}
 	}
 
-	// Handle inline objects
-	if schema.IsObject() && schema.Name == "" {
+	// Handle inline objects (objects with properties that aren't refs)
+	// Note: We check for properties rather than schema.Name == "" because inline
+	// property schemas may have the property name set as their Name.
+	if len(schema.Properties) > 0 && schema.Ref == "" {
 		properties := make([]Property, len(schema.Properties))
 		for i, prop := range schema.Properties {
 			properties[i] = Property{
@@ -287,10 +289,10 @@ func BuildTypeExpr(schema spec.Schema, ctx *BuildContext, namespacePath []string
 	case "null":
 		return NullType{}
 	default:
-		if schema.Name != "" {
-			resolvedRef := ctx.tree.GetRelativeRef(namespacePath, schema.Name)
-			return ReferenceType{Name: resolvedRef}
-		}
+		// Schemas with no type information are treated as unknown.
+		// Note: schema.Name being set does NOT indicate a reference - that's what
+		// schema.Ref is for. The Name field is just the schema's declared name,
+		// which may come from the property name for inline schemas.
 		return UnknownType{}
 	}
 }
