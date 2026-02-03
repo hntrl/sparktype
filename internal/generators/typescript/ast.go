@@ -58,11 +58,9 @@ func (n *Namespace) Serialize() string {
 	var lines []string
 	lines = append(lines, fmt.Sprintf("export namespace %s {", n.Name))
 
-	for i, child := range n.Children {
-		// Add blank line between children (not before first)
-		if i > 0 {
-			lines = append(lines, "")
-		}
+	for _, child := range n.Children {
+		// Add blank line before each child (provides spacing after opening brace and between children)
+		lines = append(lines, "")
 		// Indent each line of child output
 		childOutput := child.Serialize()
 		for _, line := range strings.Split(childOutput, "\n") {
