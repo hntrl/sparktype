@@ -58,7 +58,8 @@ export type UserRole = "admin" | "user" | "guest";
       "contents": ["api:*"],
       "options": {
         "exportType": "interface",
-        "readonlyProperties": false
+        "readonlyProperties": false,
+        "widenEnums": false
       }
     }
   ]
@@ -117,6 +118,36 @@ export interface User {
 ```
 
 Useful for immutable data patterns or preventing accidental mutations.
+
+### widenEnums
+
+**Type:** `boolean`  
+**Default:** `false`
+
+Adds `| (string & {})` to string enum union types for forward compatibility. This allows any string value while still providing autocomplete for known enum values.
+
+::: code-group
+
+```typescript [default]
+export type Status = "active" | "inactive" | "pending";
+```
+
+```typescript [widenEnums: true]
+export type Status = "active" | "inactive" | "pending" | (string & {});
+```
+
+:::
+
+This is useful when:
+- The API may add new enum values in the future
+- You want to accept arbitrary strings while still documenting known values
+- You're integrating with APIs that don't strictly enforce enum values
+
+The `(string & {})` trick preserves TypeScript's autocomplete suggestions for the literal values while allowing any string to be assigned.
+
+::: warning
+This option only applies when `generateEnums` is `false` (the default). When using TypeScript enums, widening is not applicable.
+:::
 
 ## Type Mapping
 

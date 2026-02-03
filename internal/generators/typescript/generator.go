@@ -30,6 +30,9 @@ type BuildContext struct {
 
 	// generateEnums produces TypeScript enums instead of union types for string enums.
 	generateEnums bool
+
+	// widenEnums adds (string & {}) to string literal unions for forward compatibility.
+	widenEnums bool
 }
 
 // Generate produces TypeScript type definitions from a resolved content tree.
@@ -54,6 +57,7 @@ func BuildFile(tree *contents.ResolvedTree, opts generators.Options) *File {
 		exportType:    opts.GetStringOption("exportType", "interface"),
 		readonlyProps: opts.GetBoolOption("readonlyProperties", false),
 		generateEnums: opts.GlobalOptions.GenerateEnums,
+		widenEnums:    opts.GetBoolOption("widenEnums", false),
 	}
 	return &File{
 		Header: "// " + generators.GeneratedFileHeader + "\n",
@@ -149,6 +153,10 @@ func BuildEnum(schema spec.Schema, ctx *BuildContext) Node {
 	for i, val := range schema.Enum {
 		types[i] = LiteralType{Value: val}
 	}
+	// Add widening type for forward compatibility if enabled
+	if ctx.widenEnums && allStrings(schema.Enum) {
+		types = append(types, WidenedStringType{})
+	}
 	return &TypeAlias{
 		Name:        schema.Name,
 		Description: Description(schema.Description),
@@ -232,6 +240,10 @@ func BuildTypeExpr(schema spec.Schema, ctx *BuildContext, namespacePath []string
 		types := make([]TypeExpr, len(schema.Enum))
 		for i, val := range schema.Enum {
 			types[i] = LiteralType{Value: val}
+		}
+		// Add widening type for forward compatibility if enabled
+		if ctx.widenEnums && allStrings(schema.Enum) {
+			types = append(types, WidenedStringType{})
 		}
 		return UnionType{Types: types}
 	}
