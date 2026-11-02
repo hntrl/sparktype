@@ -228,6 +228,16 @@ func convertSchema(name string, s *openapi3.Schema, specName string) Schema {
 		schema.Enum = s.Enum
 	}
 
+	// Handle const (JSON Schema / OpenAPI 3.1). kin-openapi keeps unknown
+	// keywords in Extensions for 3.0 documents.
+	if v, ok := s.Extensions["const"]; ok {
+		schema.Const = v
+		schema.HasConst = true
+		if schema.Type == "" {
+			schema.Type = constType(v)
+		}
+	}
+
 	// Handle properties
 	if len(s.Properties) > 0 {
 		requiredSet := make(map[string]bool)
@@ -313,4 +323,20 @@ func convertSchema(name string, s *openapi3.Schema, specName string) Schema {
 	}
 
 	return schema
+}
+
+// constType infers the JSON Schema type of a const value decoded from JSON.
+func constType(v any) string {
+	switch v.(type) {
+	case string:
+		return "string"
+	case float64:
+		return "number"
+	case bool:
+		return "boolean"
+	case nil:
+		return "null"
+	default:
+		return ""
+	}
 }

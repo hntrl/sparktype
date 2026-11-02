@@ -360,3 +360,29 @@ func TestLoadSpec_Complex(t *testing.T) {
 		t.Errorf("expected maximum 100, got %v", numConst.Maximum)
 	}
 }
+
+func TestLoadSpec_Const(t *testing.T) {
+	specConfig := config.Spec{
+		Schemas: map[string]any{
+			"TextContent": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"type": map[string]any{"const": "text"},
+				},
+			},
+		},
+	}
+
+	schemas, err := LoadSpec(specConfig, "", "inline")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	prop := schemas[0].Properties[0].Schema
+	if !prop.HasConst || prop.Const != "text" {
+		t.Errorf("expected const \"text\", got HasConst=%v Const=%v", prop.HasConst, prop.Const)
+	}
+	if prop.Type != "string" {
+		t.Errorf("expected inferred type 'string', got %q", prop.Type)
+	}
+}

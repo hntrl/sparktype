@@ -2,6 +2,7 @@ package contents
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/gobwas/glob"
@@ -325,8 +326,15 @@ func (r *Resolver) resolveDependencies(tree *ResolvedTree) error {
 			break
 		}
 
-		// Load and add missing schemas
-		for refName, info := range missingRefs {
+		// Load and add missing schemas in name order so output is deterministic
+		refNames := make([]string, 0, len(missingRefs))
+		for refName := range missingRefs {
+			refNames = append(refNames, refName)
+		}
+		sort.Strings(refNames)
+
+		for _, refName := range refNames {
+			info := missingRefs[refName]
 			schema, err := r.registry.GetSchema(info.sourceSpec, refName)
 			if err != nil {
 				// Schema not found in spec - skip it (will remain as unresolved reference)

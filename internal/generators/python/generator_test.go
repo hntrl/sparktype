@@ -333,3 +333,27 @@ func TestParser_UnionNoneSyntax(t *testing.T) {
 		t.Errorf("expected OptionalType inner to be StrType, got %T", opt.Inner)
 	}
 }
+
+func TestGenerate_Const(t *testing.T) {
+	tree := &contents.ResolvedTree{
+		Nodes: []contents.Node{
+			{Schema: &spec.Schema{
+				Name: "TextContent",
+				Type: "object",
+				Properties: []spec.Property{
+					{Name: "text", Schema: spec.Schema{Type: "string"}, Required: true},
+					{Name: "type", Schema: spec.Schema{Type: "string", Const: "text", HasConst: true}, Required: true},
+				},
+			}},
+		},
+		SchemaNamespaces: map[string][]string{},
+	}
+
+	result, err := Generate(tree, generators.Options{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	g := goldie.New(t, goldie.WithFixtureDir("testdata/golden"))
+	g.Assert(t, "const", result)
+}
