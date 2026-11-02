@@ -213,6 +213,10 @@ func SchemaToPyTypeExpr(schema spec.Schema, ctx *BuildContext) PyTypeExpr {
 		return ReferenceType{Name: refName}
 	}
 
+	if schema.HasConst {
+		return LiteralType{Values: []any{schema.Const}}
+	}
+
 	// Handle composition
 	if len(schema.AllOf) > 0 {
 		// Python doesn't have intersection types, use the first one

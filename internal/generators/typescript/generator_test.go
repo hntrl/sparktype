@@ -462,3 +462,27 @@ func TestCompare_NullableProperty(t *testing.T) {
 		t.Errorf("expected 1 diff for nullable mismatch, got %d", len(diffs))
 	}
 }
+
+func TestGenerate_Const(t *testing.T) {
+	tree := &contents.ResolvedTree{
+		Nodes: []contents.Node{
+			{Schema: &spec.Schema{
+				Name: "TextContent",
+				Type: "object",
+				Properties: []spec.Property{
+					{Name: "text", Schema: spec.Schema{Type: "string"}, Required: true},
+					{Name: "type", Schema: spec.Schema{Type: "string", Const: "text", HasConst: true}, Required: true},
+				},
+			}},
+		},
+		SchemaNamespaces: map[string][]string{},
+	}
+
+	result, err := Generate(tree, generators.Options{OutputOptions: map[string]any{"widenEnums": true}})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	g := goldie.New(t, goldie.WithFixtureDir("testdata/golden"))
+	g.Assert(t, "const", result)
+}

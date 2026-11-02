@@ -211,6 +211,10 @@ func BuildObjectExpr(schema spec.Schema, ctx *BuildContext, namespacePath []stri
 //
 // References use z.lazy() to handle circular dependencies between schemas.
 func SchemaToZodType(schema spec.Schema, ctx *BuildContext, namespacePath []string) ZodExpr {
+	if schema.HasConst {
+		return ZLiteral{Value: schema.Const}
+	}
+
 	// Handle $ref - use z.lazy for forward/circular references
 	if schema.Ref != "" {
 		refName := extractRefName(schema.Ref)

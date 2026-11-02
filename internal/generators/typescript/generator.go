@@ -235,6 +235,11 @@ func BuildTypeExpr(schema spec.Schema, ctx *BuildContext, namespacePath []string
 		return ReferenceType{Name: resolvedRef}
 	}
 
+	// Handle const: a single literal, never widened (it is usually a union discriminator)
+	if schema.HasConst {
+		return LiteralType{Value: schema.Const}
+	}
+
 	// Handle inline enums (enums defined directly on a property, not as a named schema)
 	if len(schema.Enum) > 0 {
 		types := make([]TypeExpr, len(schema.Enum))

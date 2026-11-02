@@ -41,6 +41,11 @@ type Schema struct {
 	// When present, generators may produce enum types or union literals.
 	Enum []any
 
+	// Const constrains the value to a single literal (JSON Schema `const`).
+	// Only meaningful when HasConst is true, since the literal may be null.
+	Const    any
+	HasConst bool
+
 	// AllOf combines schemas using logical AND (intersection).
 	// The resulting type must satisfy all listed schemas.
 	// Generators typically produce intersection types or merged interfaces.
