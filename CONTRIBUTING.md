@@ -41,7 +41,7 @@ When creating the PR in GitHub, make sure that you set the base to the correct b
 
 ### Prerequisites
 
-- **Go 1.22+** - [Installation guide](https://go.dev/doc/install)
+- **Go 1.24+** - [Installation guide](https://go.dev/doc/install)
 - **Make** - Usually pre-installed on macOS/Linux
 
 ### Building
@@ -179,7 +179,7 @@ When you open a PR, several checks run automatically:
 
 | Workflow | What it does |
 |----------|--------------|
-| **Test** | Runs tests on Linux, macOS, Windows with Go 1.21 & 1.22 |
+| **Test** | Runs tests on Linux, macOS, Windows with Go 1.24 & stable |
 | **Lint** | Runs golangci-lint to check code style |
 | **Build** | Builds the binary and verifies it runs |
 

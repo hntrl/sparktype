@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        go-version: ["1.21", "1.22"]
+        go-version: ["1.24", "stable"]
 
     steps:
       - name: Checkout code
@@ -33,12 +33,12 @@ jobs:
         run: go test -v -race ./...
 
       - name: Run tests with coverage
-        if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.22'
+        if: matrix.os == 'ubuntu-latest' && matrix.go-version == 'stable'
         run: go test -race -coverprofile=coverage.out ./...
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
-        if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.22'
+        if: matrix.os == 'ubuntu-latest' && matrix.go-version == 'stable'
         with:
           files: coverage.out
           fail_ci_if_error: false
@@ -55,7 +55,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: stable
           cache: true
 
       - name: golangci-lint
@@ -75,7 +75,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: stable
           cache: true
 
       - name: Build binary
@@ -114,7 +114,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: stable
           cache: true
 
       - name: Check for drift
